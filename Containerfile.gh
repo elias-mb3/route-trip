@@ -1,0 +1,8 @@
+# GitHub CLI + git em container (nada instalado no host). Login fica no volume viagem-gh.
+FROM docker.io/library/alpine:3.24
+RUN apk add --no-cache github-cli git
+RUN git config --system --add safe.directory /app
+WORKDIR /app
+# Usa o login do gh para o git push/pull via HTTPS
+ENTRYPOINT ["sh", "-c", "gh auth setup-git >/dev/null 2>&1; exec \"$@\"", "--"]
+CMD ["gh", "--help"]

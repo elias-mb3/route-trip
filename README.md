@@ -1,31 +1,34 @@
-# Holambra 14–15/11 — PWA offline
+# Viagem
 
-```bash
-npm install
-npm run tiles      # baixa os tiles do OSM para public/tiles (uma vez, ~alguns minutos)
-npm run build      # gera dist/ com o service worker pré-cacheando tudo (inclusive os tiles)
-npm run preview    # testa no celular pela rede local
-```
+App Android pessoal para consultar viagens **100% offline**. O roteiro, o mapa, as fotos, o checklist e o orçamento ficam no celular, com os dados cifrados (AES-256-GCM, chave guardada no Android Keystore).
 
-Antes de rodar `npm run tiles`, troque `SEU_EMAIL_AQUI` no User-Agent de `scripts/baixar-tiles.mjs`.
-Publique a pasta `dist/` em qualquer hospedagem estática com HTTPS (Netlify, GitHub Pages, Vercel),
-abra uma vez no celular com internet e use "Adicionar à tela inicial".
+Cada viagem é um `viagem.json`. Um agente de IA preenche o arquivo, o validador confere, o empacotador junta o mapa offline e as fotos, e o pacote é importado no app.
 
-A primeira versão (HTML único) ficou em `legacy/index-v1.html`.
+Todo o desenvolvimento roda em containers Podman via `./dev.sh`. Nada é instalado no host.
 
-## Com Podman (sem instalar Node)
+## Fluxo de uma viagem nova
 
-```bash
-./dev.sh imagem    # cria a imagem holambra-dev (node:22-alpine + dependências)
-./dev.sh dev       # servidor de desenvolvimento em http://localhost:5173
-./dev.sh tiles     # baixa os tiles para public/tiles
-./dev.sh preview   # build de produção + preview em http://localhost:4173 (testa o offline)
-./dev.sh install   # após mudar o package.json
-./dev.sh shell     # terminal dentro do container
-```
+1. Peça a um agente de IA para preencher `viagens/<slug>/viagem.json`, seguindo o guia [viagens/COMO-PREENCHER.md](viagens/COMO-PREENCHER.md).
+2. Confira o arquivo com `./dev.sh validar viagens/<slug>`. O validador aponta o caminho de cada erro.
+3. Gere o pacote com `./dev.sh pacote <slug>`. Ele cria o `<slug>.viagem.zip` com o mapa offline e as fotos.
+4. Envie o zip para o celular e importe no app em **Minhas viagens → Importar**.
 
-## VS Code (Dev Container)
+## Comandos
 
-Com a extensão **Dev Containers** e `"dev.containers.dockerPath": "podman"` nas configurações,
-abra a pasta e use **"Reopen in Container"**. O `npm install` roda sozinho; depois, no terminal
-integrado: `npm run dev -- --host` (porta 5173).
+| Comando | O que faz |
+|---|---|
+| `./dev.sh dev` | App no navegador em http://localhost:5173 |
+| `./dev.sh test` | Testes (vitest) |
+| `./dev.sh apk` | Gera o `viagem-debug.apk` |
+| `./dev.sh emulador` / `instalar` | Liga o emulador Android (tela em http://localhost:6080/vnc.html) e instala o APK nele |
+| `./dev.sh celular IP:PORTA [--viagem]` | Instala no celular pela Depuração sem fio (o celular precisa estar pareado) |
+| `./dev.sh icones` | Regera os ícones e o splash a partir de `assets/logo/*.svg` |
+| `./dev.sh gh …` / `push` | GitHub CLI em container / `git push` com as tags |
+
+Na primeira vez, gere as imagens: `./dev.sh imagem`, `imagem-android`, `imagem-emulador`, `imagem-novnc` e `imagem-gh`.
+
+## Documentação
+
+- [CHANGELOG.md](CHANGELOG.md): versões. A versão vem do `package.json` e cada release tem uma tag `vX.Y.Z`.
+- [SEGURANCA.md](SEGURANCA.md): análise de segurança.
+- [specs/001-app-viagem-offline/](specs/001-app-viagem-offline/): PRD, plano e tarefas (spec-kit).

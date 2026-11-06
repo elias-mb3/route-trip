@@ -67,6 +67,10 @@ case "${1:-dev}" in
       adb -s "$D" install -r /app/viagem-debug.apk && adb -s "$D" shell dumpsys package br.dev.viagem.app | grep versionName
       [ "$V" = --viagem ] && adb -s "$D" push /app/public/exemplo/holambra.viagem.zip /sdcard/Download/ | tail -1
       adb -s "$D" shell monkey -p br.dev.viagem.app -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; true' ;;
+  imagem-gh)      podman build -t viagem-gh -f Containerfile.gh . ;;
+  # GitHub: login com token (cole o token, Enter, Ctrl+D):  ./dev.sh gh auth login --with-token
+  gh)             shift; podman run --rm $([ -t 0 ] && echo -it || echo -i) -v viagem-gh:/root/.config/gh -v "$PWD":/app:Z viagem-gh gh "$@" ;;
+  push)           podman run --rm -v viagem-gh:/root/.config/gh -v "$PWD":/app:Z viagem-gh git push --follow-tags origin HEAD ;;
   emulador-parar) podman rm -f viagem-emulador viagem-novnc >/dev/null ;;
   imagem-novnc)   podman build -t viagem-novnc -f Containerfile.novnc . ;;
   adb)            shift; podman run --rm $([ -t 0 ] && echo -it) --network=host --userns=keep-id -e HOME=/tmp/home \
