@@ -36,23 +36,28 @@ case "${1:-dev}" in
     ls -lh viagem-debug.apk ;;
   imagem-emulador) podman build -t viagem-emulador -f Containerfile.emulador . ;;
   emulador)
-    # Emulador Android (API 36) numa janela do PC, com KVM. Aparelho virtual com tela do Galaxy A35.
-    # adb do emulador na porta 5555 do host: ./dev.sh instalar (re)instala o APK nele.
-    podman rm -f viagem-emulador >/dev/null 2>&1 || true
-    podman run -d --name viagem-emulador --userns=keep-id --network=host --device /dev/kvm --device /dev/dri --group-add keep-groups \
-      -e HOME=/tmp/home -e ANDROID_AVD_HOME=/avd -e DISPLAY="$DISPLAY" -e XAUTHORITY=/tmp/xauth \
-      -v /tmp/.X11-unix:/tmp/.X11-unix -v "$XAUTHORITY":/tmp/xauth:ro --security-opt label=disable \
+    # Emulador Android (API 36) com KVM. A tela sai por VNC e aparece no navegador (noVNC):
+    #   http://localhost:6080/vnc.html?autoconnect=1&resize=scale
+    # Aparelho virtual com tela do Galaxy A35. Depois: ./dev.sh instalar
+    podman rm -f viagem-emulador viagem-novnc >/dev/null 2>&1 || true
+    podman run -d --name viagem-emulador --userns=keep-id --network=host --device /dev/kvm \
+      -e HOME=/tmp/home -e ANDROID_AVD_HOME=/avd -e DISPLAY=:99 \
       -v viagem-avd:/avd:U viagem-emulador bash -c 'mkdir -p /tmp/home/.android;
         [ -d /avd/A35.avd ] || { echo no | avdmanager create avd -n A35 -k "system-images;android-36;google_apis;x86_64" -d pixel_7 >/dev/null;
           sed -i "s/^hw.lcd.width=.*/hw.lcd.width=1080/; s/^hw.lcd.height=.*/hw.lcd.height=2340/; s/^hw.lcd.density=.*/hw.lcd.density=450/; s/^hw.keyboard=.*/hw.keyboard=yes/" /avd/A35.avd/config.ini; }
         rm -rf /avd/A35.avd/*.lock;
+        Xvfb :99 -screen 0 720x1400x24 -nolisten tcp & sleep 1;
+        x11vnc -display :99 -forever -shared -nopw -localhost -rfbport 5900 -quiet &
         exec emulator -avd A35 -gpu swangle_indirect -no-audio -no-boot-anim -no-snapshot-save' >/dev/null
-    echo "Emulador abrindo (o 1º boot leva ~1–2 min). Depois: ./dev.sh instalar" ;;
+    podman run -d --name viagem-novnc --network=host viagem-novnc >/dev/null
+    echo "Emulador ligando (~1–2 min). Veja em: http://localhost:6080/vnc.html?autoconnect=1&resize=scale"
+    echo "Depois: ./dev.sh instalar" ;;
   instalar)
     podman cp viagem-debug.apk viagem-emulador:/tmp/app.apk
     podman exec viagem-emulador bash -c 'adb wait-for-device; until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = 1 ]; do sleep 2; done;
       adb install -r /tmp/app.apk && adb shell monkey -p br.dev.viagem.app 1 >/dev/null' ;;
-  emulador-parar) podman rm -f viagem-emulador >/dev/null ;;
+  emulador-parar) podman rm -f viagem-emulador viagem-novnc >/dev/null ;;
+  imagem-novnc)   podman build -t viagem-novnc -f Containerfile.novnc . ;;
   adb)            shift; podman run --rm -it --network=host --userns=keep-id -e HOME=/tmp/home \
                     -v "$PWD":/app:Z -v "$HOME/.android":/tmp/home/.android:Z "$IMG_AND" adb "$@" ;;
   *) echo "uso: ./dev.sh [imagem|imagem-android|install|dev|build|test|validar|pacote|schema|apk|emulador|instalar|emulador-parar|imagem-emulador|adb|preview|shell|shell-android]"; exit 1 ;;
