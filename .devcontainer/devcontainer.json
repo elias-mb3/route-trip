@@ -1,0 +1,33 @@
+{
+  // Abrir com VS Code: extensão "Dev Containers" → "Reopen in Container".
+  // Usa Podman: defina "dev.containers.dockerPath": "podman" nas configurações do VS Code.
+  "name": "Holambra PWA",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+
+  // Podman rootless: mantém seu UID dentro do container (arquivos continuam seus)
+  // e :Z ajusta o rótulo SELinux do Fedora.
+  "runArgs": ["--userns=keep-id", "--network=host"],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,Z",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "node",
+  "containerUser": "node",
+  "updateRemoteUserUID": false,
+  "containerEnv": { "HOME": "/home/node" },
+
+  "postCreateCommand": "npm install",
+  // Com --network=host as portas já ficam no computador (5173 dev, 4173 preview);
+  // o encaminhamento do VS Code ocuparia as mesmas portas e travaria o Vite.
+  "otherPortsAttributes": { "onAutoForward": "ignore" },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bradlc.vscode-tailwindcss",
+        "ms-playwright.playwright"
+      ],
+      "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  }
+}

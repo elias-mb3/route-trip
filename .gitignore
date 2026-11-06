@@ -1,0 +1,10 @@
+node_modules
+dist
+.tmp
+android/app/build
+android/.gradle
+*.jks
+*.keystore
+*.apk
+*.viagem.zip
+tsconfig.tsbuildinfo
