@@ -44,6 +44,11 @@ Ordenação: por `hora` (sem hora → ao fim, na ordem do arquivo).
 - `estado:<id>` → EstadoViagem
 - `pkg:<id>:tiles/z/x/y.png`, `pkg:<id>:fotos/<arq>` → Blob
 
+## Criptografia
+- Todo valor acima é gravado como `{v:1, iv: Uint8Array(12), dados: ArrayBuffer}` (AES-256-GCM). Chaves do IndexedDB (nomes) não contêm dados sensíveis.
+- Chave de dados: Android Keystore (`segredo:chave-dados`); só em memória enquanto o app roda.
+- Perder a chave (desinstalar/limpar dados) = dados ilegíveis; recuperação é reimportar o pacote.
+
 ## Transições
 - **Importar** (id novo): valida → grava blobs → grava `viagem:<id>` → atualiza índice (última escrita; falha antes dela = nada visível).
 - **Reimportar** (id existente): substitui conteúdo e pacote; estado preservado; referências a ids removidos são ignoradas na leitura (e limpas ao exportar).

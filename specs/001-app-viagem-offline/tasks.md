@@ -11,7 +11,7 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Instalar deps no container: `fflate`, `zod`, `@capacitor/{core,app,app-launcher,filesystem,share}`, dev `@capacitor/cli`, `vitest`, `sharp` em package.json
+- [ ] T001 Instalar deps no container: `fflate`, `zod`, `@aparajita/capacitor-secure-storage`, `@capacitor/{core,app,app-launcher,filesystem,share}`, dev `@capacitor/cli`, `vitest`, `sharp` em package.json
 - [ ] T002 [P] Adicionar subcomandos `validar`, `pacote`, `schema`, `test`, `apk`, `adb`, `imagem-android` em dev.sh
 - [ ] T003 [P] Confirmar requisitos do Capacitor 8 (JDK, compileSdk, minSdk) via context7 e tags reais da imagem base; criar Containerfile.android (Debian, JDK, cmdline-tools, licenças) com volumes de cache Gradle e keystore `~/.android-keys`
 - [ ] T004 [P] Script `test` (vitest) e `build:android` (`vite build --mode android`, PWA desligado) em package.json e vite.config.ts
@@ -24,8 +24,10 @@
 - [ ] T008 [P] Testes do formato (válido mínimo, hora inválida, id duplicado, campo desconhecido, formato futuro) em tests/formato.test.ts
 - [ ] T009 Converter Holambra (roteiro.ts + fotos.ts + caixinhas) para viagens/holambra/viagem.json e copiar fotos para viagens/holambra/fotos/
 - [ ] T010 [P] CLI scripts/validar.mjs e scripts/schema.mjs (gera viagens/viagem.schema.json)
-- [ ] T011 Repositório IndexedDB (índice, ativa, viagem, estado, blobs `pkg:`) com escrita atômica em src/viagens/repositorio.ts
-- [ ] T012 ViagemContext (viagem ativa + estado + ações) substituindo src/estado.tsx; remover Login, cripto, acesso, backup, definir-senha, src/data/*
+- [ ] T011a Cofre de chave: gerar/ler chave de dados no Android Keystore (`@aparajita/capacitor-secure-storage`), fallback dev no navegador, em src/seguranca/chave.ts
+- [ ] T011b Simplificar src/lib/cripto.ts para só AES-256-GCM (`cifrar`/`decifrar` com chave em memória) + testes em tests/cripto.test.ts
+- [ ] T011 Repositório IndexedDB (índice, ativa, viagem, estado, blobs `pkg:`) com escrita atômica e **todo valor cifrado** em src/viagens/repositorio.ts
+- [ ] T012 ViagemContext (viagem ativa + estado + ações) substituindo src/estado.tsx; remover Login, acesso, backup, definir-senha, src/data/*
 - [ ] T013 Generalizar src/lib/datas.ts e src/lib/types.ts para N dias (sem `sab|dom`); dia padrão = hoje dentro do período
 
 **Checkpoint**: `./dev.sh validar viagens/holambra` OK; `./dev.sh test` verde.
@@ -58,6 +60,7 @@
 - [ ] T025 [US5] `npx cap init` + `cap add android` (appId `br.dev.viagem.app`, nome "Viagem") em capacitor.config.ts e android/
 - [ ] T026 [P] [US5] Ponte nativa: botão voltar, abrir Maps/Waze via app-launcher, salvar/compartilhar arquivo em src/nativo/plataforma.ts
 - [ ] T027 [P] [US5] Ícone e splash com `@capacitor/assets` a partir de public/icons/icon-512.png; safe areas
+- [ ] T027b [US5] `android:allowBackup="false"` e `fullBackupContent` em android/app/src/main/AndroidManifest.xml; teste: `adb backup`/leitura do IndexedDB não revela texto da viagem
 - [ ] T028 [US5] `./dev.sh apk` gera viagem-debug.apk assinado com a keystore persistida; conferir tamanho ≤ 15 MB
 
 ## Phase 6: US3 — Editar pela interface (P2)
@@ -67,7 +70,7 @@
 - [ ] T029 [P] [US3] Formulário de parada (criar/editar/remover, foto da câmera/galeria) em src/pages/EditarParada.tsx
 - [ ] T030 [P] [US3] Editar viagem e dias (título, cores, datas, adicionar/remover dia) em src/pages/EditarViagem.tsx
 - [ ] T031 [P] [US3] Edição de seções/itens do checklist em src/pages/Checklist.tsx
-- [ ] T032 [US3] Exportar viagem (json ou zip com fotos/tiles, estado opcional) em src/viagens/exportar.ts + botão em MinhasViagens
+- [ ] T032 [US3] Exportar viagem (json ou zip com fotos/tiles, estado opcional; texto puro só após confirmação, opção cifrada com senha digitada na hora) em src/viagens/exportar.ts + botão em MinhasViagens
 - [ ] T033 [P] [US3] Teste ida-e-volta exportar→importar em tests/exportar.test.ts
 
 ## Phase 7: US4 — Orçamento (P2)

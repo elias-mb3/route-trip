@@ -1,6 +1,6 @@
 <!--
 Sync Impact Report
-- Version: template → 1.0.0 (adoção inicial)
+- Version: 1.0.0 → 1.1.0 (MINOR: princípio VI Dados Cifrados em Repouso)
 - Princípios adicionados: I Offline-First, II Leve, III Genérico, IV Configurável por IA, V Editável pela Interface
 - Seções adicionadas: Restrições Técnicas, Fluxo de Desenvolvimento
 - TODOs: nenhum
@@ -38,6 +38,14 @@ Tudo que o JSON define MUST poder ser criado, editado e removido pela interface 
 paradas, checklist, caixinhas, gastos). O app MUST exportar a viagem editada no mesmo formato do
 JSON de entrada (ida e volta sem perda), para que a IA possa continuar editando.
 
+### VI. Dados Cifrados em Repouso
+Sem login, mas todo dado da viagem gravado no aparelho (conteúdo, estado, gastos, notas, fotos,
+tiles) MUST estar cifrado com AES-256-GCM. A chave de dados é gerada no primeiro uso e guardada
+apenas no Android Keystore (hardware, nunca em texto no armazenamento do app). Backup automático
+do Android MUST ficar desligado. Arquivos exportados para a IA saem em texto puro só por ação
+explícita do usuário, com aviso. Motivo: um app malicioso ou extração do armazenamento não pode
+ler a viagem.
+
 ## Restrições Técnicas
 
 - Stack: React + TypeScript + Vite + Tailwind + Leaflet, empacotado como APK com Capacitor.
@@ -45,7 +53,7 @@ JSON de entrada (ida e volta sem perda), para que a IA possa continuar editando.
 - Persistência local (IndexedDB e, no Android, Filesystem do Capacitor).
 - Ferramentas de desenvolvimento (Node, JDK, Android SDK, Python) rodam **somente em
   containers Podman**; nada é instalado na máquina host.
-- Uso pessoal: sem Play Store, sem contas, sem login. APK assinado com chave persistida fora
+- Uso pessoal: sem Play Store, sem contas, sem login (proteção pelos dados cifrados, princípio VI). APK assinado com chave persistida fora
   do repositório.
 - Idioma pt-BR; fuso e moeda definidos por viagem.
 
@@ -64,4 +72,4 @@ arquivo com versão semântica (MAJOR remove/redefine princípio, MINOR adiciona
 e registrar o motivo no Sync Impact Report. Todo plano (`/speckit-plan`) MUST passar pelo
 Constitution Check; violações exigem justificativa na tabela de complexidade.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-06 | **Last Amended**: 2026-11-06
+**Version**: 1.1.0 | **Ratified**: 2026-11-06 | **Last Amended**: 2026-11-06

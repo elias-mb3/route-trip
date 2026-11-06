@@ -15,7 +15,7 @@ containers; desenvolvimento e simulação no Chrome; APK no fim. Entrega: hoje (
 
 **Language/Version**: TypeScript 5.6, Node 22 (só em container)
 
-**Primary Dependencies**: React 18, Vite 5, Tailwind 3, Leaflet/react-leaflet, idb-keyval, lucide-react; novas: Capacitor 8.6 (core, android, cli, app, app-launcher, filesystem, share), `fflate` 0.8, `zod` 4; dev: `vitest`, `sharp` (só container)
+**Primary Dependencies**: React 18, Vite 5, Tailwind 3, Leaflet/react-leaflet, idb-keyval, lucide-react; novas: Capacitor 8.6 (core, android, cli, app, app-launcher, filesystem, share), `fflate` 0.8, `zod` 4, `@aparajita/capacitor-secure-storage` 8.0.1; dev: `vitest`, `sharp` (só container)
 
 **Storage**: IndexedDB (conteúdo, estado, blobs de tiles/fotos)
 
@@ -40,6 +40,7 @@ containers; desenvolvimento e simulação no Chrome; APK no fim. Entrega: hoje (
 | III Genérico | `src/data/roteiro.ts` sai; Holambra vira `viagens/holambra/viagem.json`; dias N | ✅ |
 | IV Configurável por IA | zod → JSON Schema, `COMO-PREENCHER.md`, `./dev.sh validar` | ✅ |
 | V Editável pela UI | Formulários para viagem/dia/parada/checklist/caixinha; exportar ida-e-volta | ✅ |
+| VI Cifrado em repouso | AES-GCM em todo valor do IndexedDB; chave no Android Keystore; allowBackup=false | ✅ |
 | Containers only | `dev.sh` + `Containerfile.android` | ✅ |
 
 Re-check pós-design: sem violações. Complexity Tracking vazio.
@@ -77,7 +78,7 @@ android/                # gerado por `cap add android`
 Containerfile.android   dev.sh
 ```
 
-**Structure Decision**: projeto único (web + Capacitor). Removidos: `src/data/*`, `Login.tsx`, `cripto.ts`, `acesso.ts`, `backup.ts` (substituído por exportar viagem), `definir-senha.mjs`.
+**Structure Decision**: projeto único (web + Capacitor). Removidos: `src/data/*`, `Login.tsx`, `acesso.ts`, PBKDF2 do login (cripto.ts fica, só com AES-GCM), `backup.ts` (substituído por exportar viagem), `definir-senha.mjs`.
 
 ## Ordem de execução (hoje)
 

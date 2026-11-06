@@ -33,9 +33,12 @@ Versões consultadas no npm em 2026-11-06 (container `node:22-slim`).
 - **Decision**: reaproveitar `scripts/baixar-tiles.mjs` (OSM, sequencial, ~200 ms, User-Agent de contato já aprovado); bbox = paradas + margem de 1 km, zoom 14–16 (padrão), limite 50 MB. Fotos: baixar `foto.url` e converter para webp 720 px com `sharp` (só no container de dev).
 - **Alternatives**: MBTiles/vector tiles (mais leve em área grande, mas exige renderizador — complexidade desnecessária).
 
-## R7. Login/criptografia
-- **Decision**: remover (`Login.tsx`, `cripto.ts`, `acesso.ts`, `definir-senha.mjs`); `storage.ts` passa a gravar em claro.
-- **Rationale**: constituição (sem login); app pessoal; celular tem bloqueio; o JSON de entrada já é texto puro.
+## R7. Sem login, com criptografia em repouso
+- **Decision**: remover login (`Login.tsx`, `acesso.ts`, `definir-senha.mjs`, PBKDF2). Manter AES-256-GCM via WebCrypto (`cripto.ts`/`storage.ts` reaproveitados): toda chave do IndexedDB (`viagem:`, `estado:`, `pkg:`) guarda `{iv, dados}` cifrado. A chave de dados (32 bytes aleatórios) é gerada no 1º uso e guardada no **Android Keystore** via `@aparajita/capacitor-secure-storage` 8.0.1; na abertura é lida e importada como `CryptoKey` não extraível só em memória. No navegador (dev) o fallback é uma CryptoKey não extraível no IndexedDB, marcada como "modo dev".
+- **Rationale**: o sandbox do Android já isola apps sem root; a cifra protege contra root/malware com acesso ao armazenamento, backup adb e extração física. Sem senha, nada para o usuário lembrar.
+- **Também**: `android:allowBackup="false"` e `fullBackupContent=false` no manifest; export em texto puro só com confirmação; opção de export cifrado (mesma chave não serve fora do aparelho → export cifrado usa senha digitada na hora, PBKDF2 já existente).
+- **Custo**: AES-GCM em ~350 tiles de ~12 KB é < 1 s no A35; tiles decifrados sob demanda.
+- **Alternatives**: SQLCipher (plugin pesado, troca o storage); só confiar no sandbox (usuário pediu cifra); chave derivada de PIN (volta a ser login).
 
 ## R8. Adaptações de WebView
 - **Decision**: `@capacitor/app` (botão voltar), `@capacitor/app-launcher` (Maps/Waze), `@capacitor/filesystem` + `@capacitor/share` (exportar), `<input type=file accept>` para importar e foto (plano B: `@capacitor/camera` 8.2), `@capacitor/assets` 4.0 para ícone/splash. Sem service worker no build Android.

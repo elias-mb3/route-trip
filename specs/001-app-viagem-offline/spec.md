@@ -144,6 +144,8 @@ conferir que a viagem continua lá.
 - **FR-030**: O mesmo app MUST rodar no navegador do computador para desenvolvimento e simulação, e como app Android instalável.
 - **FR-031**: Todas as ferramentas de build MUST rodar em containers, sem instalar nada no host.
 - **FR-032**: Atualizações do app MUST preservar os dados (assinatura estável).
+- **FR-034**: Todo dado da viagem armazenado no aparelho MUST estar cifrado; a chave MUST ficar no cofre de chaves do sistema (protegido por hardware), sem senha para o usuário.
+- **FR-035**: Backup automático do sistema MUST estar desligado, e exportar em texto puro MUST exigir confirmação explícita.
 - **FR-033**: A viagem de Holambra MUST vir como exemplo e passar no validador.
 
 ### Key Entities
@@ -166,12 +168,13 @@ conferir que a viagem continua lá.
 - **SC-003**: Ida e volta (exportar → importar) reproduz 100% do conteúdo e do estado.
 - **SC-004**: Instalador ≤ 15 MB sem viagens; pacote de Holambra ≤ 10 MB.
 - **SC-005**: Do arquivo de dados ao app no celular em ≤ 5 minutos (validar, empacotar, enviar, importar).
+- **SC-007**: Copiar o armazenamento do app para outro aparelho ou lê-lo fora do app não revela nenhum nome, valor ou coordenada da viagem.
 - **SC-006**: Nenhuma ferramenta instalada no host além do gerenciador de containers já existente.
 
 ## Assumptions
 
 - Uso pessoal em um ou dois celulares Android (Galaxy A35, Android 14+); sem iOS, loja, contas ou sincronização entre aparelhos.
-- Sem login nem criptografia: o celular já tem bloqueio de tela (decisão padrão; os dados da versão PWA não são migrados, porque o orçamento ainda estava vazio).
+- Sem login, mas com dados cifrados em repouso (chave no cofre do sistema). Os dados da versão PWA não são migrados (o orçamento estava vazio).
 - O orçamento continua: caixinhas definidas no arquivo de dados; gastos lançados no app.
 - Imagens de mapa vêm do OpenStreetMap, baixadas uma vez no computador com uso educado do serviço.
 - Instalação do APK por transferência direta (Quick Share/cabo) ou por depuração sem fio.
