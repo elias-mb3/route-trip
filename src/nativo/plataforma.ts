@@ -19,7 +19,9 @@ export async function salvarArquivo(nome: string, bytes: Uint8Array, tipo: strin
 }
 
 // Links externos (Maps, Waze, sites): no Android abre o app/navegador do sistema, fora da WebView
+// Só abre http(s); qualquer outro esquema (javascript:, intent:, file:) é ignorado.
 export async function abrirExterno(url: string) {
+  if (!/^https?:\/\//i.test(url)) return;
   if (nativo()) {
     const { AppLauncher } = await import('@capacitor/app-launcher');
     try { await AppLauncher.openUrl({ url }); return; } catch { /* cai no window.open */ }

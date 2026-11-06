@@ -17,6 +17,12 @@ describe('formato da viagem', () => {
   it('aceita o Holambra', () => {
     expect(erros(JSON.parse(readFileSync('viagens/holambra/viagem.json', 'utf8')))).toEqual([]);
   });
+  it('recusa links que não são http(s)', () => {
+    for (const u of ['javascript:alert(1)', 'intent://x#Intent;end', 'file:///data/x']) {
+      const v: any = minima(); v.dias[0].paradas[0].links = [{ rotulo: 'x', url: u }];
+      expect(erros(v)).toEqual(['dias[0].paradas[0].links[0].url: URL inválida (use https://...)']);
+    }
+  });
   it('aponta hora inválida com caminho', () => {
     const v = minima(); v.dias[0].paradas[0].hora = '9h';
     expect(erros(v)).toEqual(['dias[0].paradas[0].hora: use HH:MM (ex.: 09:30)']);

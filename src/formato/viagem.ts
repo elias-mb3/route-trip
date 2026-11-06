@@ -12,7 +12,8 @@ import { CATEGORIAS, FORMATO, ICONES_CAIXINHA } from './constantes';
 export { CATEGORIAS, FORMATO, ICONES_CAIXINHA };
 
 const id = (oque: string) => z.string().regex(ID, `${oque}: use letras minúsculas, números e hífen (ex.: "dia-1")`);
-const url = z.url({ message: 'URL inválida (use https://...)' });
+// Só http(s): bloqueia javascript:, intent:, file: etc. vindos de um arquivo importado
+const url = z.url({ protocol: /^https?$/, message: 'URL inválida (use https://...)' });
 
 export const Local = z.strictObject({
   lat: z.number().min(-90).max(90),

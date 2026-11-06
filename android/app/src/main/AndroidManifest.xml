@@ -39,5 +39,6 @@
 
     <!-- Permissions -->
 
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Sem INTERNET: o app é 100% offline; links abrem em outros apps (Maps, Waze, navegador).
+         Sem essa permissão, nenhum código dentro do app consegue enviar dados para fora. -->
 </manifest>

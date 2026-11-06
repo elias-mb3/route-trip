@@ -91,6 +91,8 @@ export default function MinhasViagens() {
         Reimportar a mesma viagem atualiza o conteúdo e mantém o que você marcou.
       </p>
 
+      <p className="mt-6 text-center text-xs text-stone-400">Viagem v{__VERSAO__}</p>
+
       {exportando && viagem && (
         <FolhaInferior titulo="Exportar viagem" onFechar={() => setExportando(false)}>
           <p className="mb-3 rounded-2xl bg-amber-50 p-3 text-sm text-amber-900">

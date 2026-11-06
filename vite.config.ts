@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -5,8 +6,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // --mode android: sem service worker (no APK os arquivos já são locais e o SW só
 // causaria cache velho entre versões do app)
+const versao = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version;
+
 export default defineConfig(({ mode }) => ({
   base: './',
+  define: { __VERSAO__: JSON.stringify(versao) },
   resolve: mode === 'android'
     ? { alias: { 'virtual:pwa-register/react': fileURLToPath(new URL('./src/lib/pwa-stub.ts', import.meta.url)) } }
     : undefined,
