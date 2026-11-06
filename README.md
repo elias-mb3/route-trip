@@ -32,3 +32,9 @@ Na primeira vez, gere as imagens: `./dev.sh imagem`, `imagem-android`, `imagem-e
 - [CHANGELOG.md](CHANGELOG.md): versões. A versão vem do `package.json` e cada release tem uma tag `vX.Y.Z`.
 - [SEGURANCA.md](SEGURANCA.md): análise de segurança.
 - [specs/001-app-viagem-offline/](specs/001-app-viagem-offline/): PRD, plano e tarefas (spec-kit).
+
+## VS Code (Dev Container)
+
+Com a extensão **Dev Containers** e `"dev.containers.dockerPath": "podman"` nas configurações,
+abra a pasta e use **"Reopen in Container"**. O `npm install` roda sozinho; depois, no terminal
+integrado: `npm run dev -- --host` (porta 5173).
