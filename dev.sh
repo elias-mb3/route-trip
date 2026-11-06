@@ -70,7 +70,8 @@ case "${1:-dev}" in
   imagem-gh)      podman build -t viagem-gh -f Containerfile.gh . ;;
   # GitHub: login com token (cole o token, Enter, Ctrl+D):  ./dev.sh gh auth login --with-token
   gh)             shift; podman run --rm $([ -t 0 ] && echo -it || echo -i) -v viagem-gh:/root/.config/gh -v "$PWD":/app:Z viagem-gh gh "$@" ;;
-  push)           podman run --rm -v viagem-gh:/root/.config/gh -v "$PWD":/app:Z viagem-gh git push --follow-tags origin HEAD ;;
+  # push usa o login do gh do host só neste comando (não altera o ~/.gitconfig)
+  push)           git -c credential.helper= -c credential.helper='!gh auth git-credential' push --follow-tags origin HEAD ;;
   emulador-parar) podman rm -f viagem-emulador viagem-novnc >/dev/null ;;
   imagem-novnc)   podman build -t viagem-novnc -f Containerfile.novnc . ;;
   adb)            shift; podman run --rm $([ -t 0 ] && echo -it) --network=host --userns=keep-id -e HOME=/tmp/home \

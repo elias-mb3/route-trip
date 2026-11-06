@@ -23,7 +23,7 @@ Todo o desenvolvimento roda em containers Podman via `./dev.sh`. Nada é instala
 | `./dev.sh emulador` / `instalar` | Liga o emulador Android (tela em http://localhost:6080/vnc.html) e instala o APK nele |
 | `./dev.sh celular IP:PORTA [--viagem]` | Instala no celular pela Depuração sem fio (o celular precisa estar pareado) |
 | `./dev.sh icones` | Regera os ícones e o splash a partir de `assets/logo/*.svg` |
-| `./dev.sh gh …` / `push` | GitHub CLI em container / `git push` com as tags |
+| `./dev.sh push` | `git push` com as tags, usando o login do `gh` |
 
 Na primeira vez, gere as imagens: `./dev.sh imagem`, `imagem-android`, `imagem-emulador`, `imagem-novnc` e `imagem-gh`.
 
