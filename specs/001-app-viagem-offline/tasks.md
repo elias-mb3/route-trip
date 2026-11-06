@@ -11,10 +11,10 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Instalar deps no container: `fflate`, `zod`, `@aparajita/capacitor-secure-storage`, `@capacitor/{core,app,app-launcher,filesystem,share}`, dev `@capacitor/cli`, `vitest`, `sharp` em package.json
-- [ ] T002 [P] Adicionar subcomandos `validar`, `pacote`, `schema`, `test`, `apk`, `adb`, `imagem-android` em dev.sh
-- [ ] T003 [P] Confirmar requisitos do Capacitor 8 (JDK, compileSdk, minSdk) via context7 e tags reais da imagem base; criar Containerfile.android (Debian, JDK, cmdline-tools, licenças) com volumes de cache Gradle e keystore `~/.android-keys`
-- [ ] T004 [P] Script `test` (vitest) e `build:android` (`vite build --mode android`, PWA desligado) em package.json e vite.config.ts
+- [x] T001 Instalar deps no container: `fflate`, `zod`, `@aparajita/capacitor-secure-storage`, `@capacitor/{core,app,app-launcher,filesystem,share}`, dev `@capacitor/cli`, `vitest`, `sharp` em package.json
+- [x] T002 [P] Adicionar subcomandos `validar`, `pacote`, `schema`, `test`, `apk`, `adb`, `imagem-android` em dev.sh
+- [x] T003 [P] Confirmar requisitos do Capacitor 8 (JDK, compileSdk, minSdk) via context7 e tags reais da imagem base; criar Containerfile.android (Debian, JDK, cmdline-tools, licenças) com volumes de cache Gradle e keystore `~/.android-keys`
+- [x] T004 [P] Script `test` (vitest) e `build:android` (`vite build --mode android`, PWA desligado) em package.json e vite.config.ts
 
 ## Phase 2: Foundational (bloqueia todas as histórias)
 
@@ -57,7 +57,7 @@
 
 **Independent Test**: quickstart passo 7.
 
-- [ ] T025 [US5] `npx cap init` + `cap add android` (appId `br.dev.viagem.app`, nome "Viagem") em capacitor.config.ts e android/
+- [x] T025 [US5] (adiantada na fase 1) `npx cap init` + `cap add android` (appId `br.dev.viagem.app`, nome "Viagem") em capacitor.config.ts e android/
 - [ ] T026 [P] [US5] Ponte nativa: botão voltar, abrir Maps/Waze via app-launcher, salvar/compartilhar arquivo em src/nativo/plataforma.ts
 - [ ] T027 [P] [US5] Ícone e splash com `@capacitor/assets` a partir de public/icons/icon-512.png; safe areas
 - [ ] T027b [US5] `android:allowBackup="false"` e `fullBackupContent` em android/app/src/main/AndroidManifest.xml; teste: `adb backup`/leitura do IndexedDB não revela texto da viagem

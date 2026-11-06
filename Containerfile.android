@@ -1,0 +1,27 @@
+# Imagem de build Android do app Viagem (Capacitor 8.6).
+# Requisitos lidos do @capacitor/android 8.6.0 e do template do @capacitor/cli 8.6.0:
+#   JDK 21, compileSdk/targetSdk 36, minSdk 24, AGP 8.13.0, Gradle 8.14.3.
+# Base Debian/Ubuntu (glibc): o aapt2 do Android não roda em Alpine (musl).
+FROM docker.io/library/node:22-bookworm-slim AS node
+
+FROM docker.io/library/eclipse-temurin:21-jdk-noble
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+ && ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
+ && apt-get update && apt-get install -y --no-install-recommends unzip git ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV ANDROID_HOME=/opt/android-sdk \
+    ANDROID_SDK_ROOT=/opt/android-sdk
+ENV PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+ARG CMDLINE=commandlinetools-linux-16111833_latest.zip
+RUN mkdir -p $ANDROID_HOME/cmdline-tools \
+ && curl -fsSL https://dl.google.com/android/repository/$CMDLINE -o /tmp/c.zip \
+ && unzip -q /tmp/c.zip -d /tmp/c && mv /tmp/c/cmdline-tools $ANDROID_HOME/cmdline-tools/latest \
+ && rm -rf /tmp/c /tmp/c.zip \
+ && yes | sdkmanager --licenses >/dev/null \
+ && sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "build-tools;35.0.0" \
+ && chmod -R a+rwX $ANDROID_HOME
+
+WORKDIR /app

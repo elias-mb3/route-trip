@@ -1,16 +1,22 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
+// --mode android: sem service worker (no APK os arquivos já são locais e o SW só
+// causaria cache velho entre versões do app)
+export default defineConfig(({ mode }) => ({
   base: './',
+  resolve: mode === 'android'
+    ? { alias: { 'virtual:pwa-register/react': fileURLToPath(new URL('./src/lib/pwa-stub.ts', import.meta.url)) } }
+    : undefined,
   // host: true → escuta em IPv4 e IPv6 (sem isso o Chrome pode não achar o localhost);
   // strictPort → erro claro se a porta estiver ocupada, em vez de pular para 5174
   server: { host: true, port: 5173, strictPort: true },
   preview: { host: true, port: 4173, strictPort: true },
   plugins: [
     react(),
-    VitePWA({
+    mode !== 'android' && VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png', 'icons/*.svg'],
       manifest: {
@@ -36,4 +42,4 @@ export default defineConfig({
       },
     }),
   ],
-});
+}));
