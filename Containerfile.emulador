@@ -1,0 +1,10 @@
+# Emulador Android (Android 16 / API 36, x86_64 com KVM) para testar o APK no PC sem instalar nada no host.
+# Base: imagem de build (JDK + SDK). Janela via X11 (XWayland) do host.
+FROM localhost/viagem-android:latest
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libpulse0 libnss3 libxcomposite1 libxcursor1 libxdamage1 libxi6 libxtst6 libxrandr2 \
+      libasound2t64 libgl1 libegl1 libxkbfile1 libxcb-cursor0 libxkbcommon-x11-0 libdbus-1-3 libfontconfig1 libsm6 libice6 libxext6 libxfixes3 libx11-xcb1 \
+ && rm -rf /var/lib/apt/lists/*
+RUN sdkmanager "emulator" "system-images;android-36;google_apis;x86_64" >/dev/null \
+ && chmod -R a+rwX $ANDROID_HOME
+ENV PATH=$PATH:$ANDROID_HOME/emulator
