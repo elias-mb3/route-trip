@@ -56,6 +56,16 @@ case "${1:-dev}" in
     podman cp viagem-debug.apk viagem-emulador:/tmp/app.apk
     podman exec viagem-emulador bash -c 'adb wait-for-device; until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = 1 ]; do sleep 2; done;
       adb install -r /tmp/app.apk && adb shell monkey -p br.dev.viagem.app 1 >/dev/null' ;;
+  celular)
+    # Instala o APK no celular pela Depuração sem fio (já pareado). Uso: ./dev.sh celular IP:PORTA
+    # Com --viagem, também copia o pacote de exemplo para Downloads (reimportar em "Minhas viagens").
+    [ -n "${2:-}" ] || { echo "uso: ./dev.sh celular IP:PORTA [--viagem]"; exit 1; }
+    podman run --rm --network=host --userns=keep-id -e HOME=/tmp/home -e D="$2" -e V="${3:-}" \
+      -v "$PWD":/app:Z,ro -v "$HOME/.android":/tmp/home/.android:Z "$IMG_AND" bash -c '
+      timeout 20 adb connect "$D" | grep -q "^connected" || { echo "celular não respondeu em $D"; exit 1; }
+      adb -s "$D" install -r /app/viagem-debug.apk && adb -s "$D" shell dumpsys package br.dev.viagem.app | grep versionName
+      [ "$V" = --viagem ] && adb -s "$D" push /app/public/exemplo/holambra.viagem.zip /sdcard/Download/ | tail -1
+      adb -s "$D" shell monkey -p br.dev.viagem.app -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; true' ;;
   emulador-parar) podman rm -f viagem-emulador viagem-novnc >/dev/null ;;
   imagem-novnc)   podman build -t viagem-novnc -f Containerfile.novnc . ;;
   adb)            shift; podman run --rm $([ -t 0 ] && echo -it) --network=host --userns=keep-id -e HOME=/tmp/home \

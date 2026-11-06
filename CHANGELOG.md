@@ -7,6 +7,13 @@ uma release com número normal e nome "Demo" na tag e aqui.
 Para lançar: subir `version` em `package.json` (e nas linhas 3 e 9 de `package-lock.json`),
 registrar aqui, `./dev.sh apk`, commit e `git tag -a vX.Y.Z`.
 
+## [1.2.0] - 2026-11-06
+
+- Holambra: removidos itens pessoais (observação do hotel, 2 itens do
+  checklist e a caixinha). Ficam só os lugares do roteiro.
+- Ícone de caixinha renomeado para `especial` (formato genérico).
+- `./dev.sh celular IP:PORTA [--viagem]`: instala no celular pela Depuração sem fio.
+
 ## [1.1.0] - 2026-11-06 — Segurança antes do ADB no A35
 
 Relatório completo em [SEGURANCA.md](SEGURANCA.md).

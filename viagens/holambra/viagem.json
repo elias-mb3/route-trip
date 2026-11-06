@@ -255,10 +255,6 @@
       "titulo": "Antes da viagem",
       "itens": [
         {
-          "id": "antes-1",
-          "texto": "Confirmar reserva com o hotel"
-        },
-        {
           "id": "antes-2",
           "texto": "Reservar jantar de sábado no hotel"
         },
@@ -284,10 +280,6 @@
       "id": "bagagem",
       "titulo": "Bagagem",
       "itens": [
-        {
-          "id": "bagagem-1",
-          "texto": "Óculos de sol"
-        },
         {
           "id": "bagagem-2",
           "texto": "Documentos e CNH"
@@ -364,13 +356,6 @@
         "nome": "Aluguel do carro",
         "icone": "carro",
         "cor": "#0369A1",
-        "limite": 0
-      },
-      {
-        "id": "especial",
-        "nome": "Especial",
-        "icone": "especial",
-        "cor": "#E8613C",
         "limite": 0
       },
       {
