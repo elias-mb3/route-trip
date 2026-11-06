@@ -42,7 +42,7 @@ case "${1:-dev}" in
     podman run -d --name viagem-emulador --userns=keep-id --network=host --device /dev/kvm --device /dev/dri --group-add keep-groups \
       -e HOME=/tmp/home -e ANDROID_AVD_HOME=/avd -e DISPLAY="$DISPLAY" -e XAUTHORITY=/tmp/xauth \
       -v /tmp/.X11-unix:/tmp/.X11-unix -v "$XAUTHORITY":/tmp/xauth:ro --security-opt label=disable \
-      -v viagem-avd:/avd:U viagem-emulador bash -c 'mkdir -p /tmp/home/.android;mkdir -p /tmp/home/.android;
+      -v viagem-avd:/avd:U viagem-emulador bash -c 'mkdir -p /tmp/home/.android;
         [ -d /avd/A35.avd ] || { echo no | avdmanager create avd -n A35 -k "system-images;android-36;google_apis;x86_64" -d pixel_7 >/dev/null;
           sed -i "s/^hw.lcd.width=.*/hw.lcd.width=1080/; s/^hw.lcd.height=.*/hw.lcd.height=2340/; s/^hw.lcd.density=.*/hw.lcd.density=450/; s/^hw.keyboard=.*/hw.keyboard=yes/" /avd/A35.avd/config.ini; }
         rm -rf /avd/A35.avd/*.lock;
