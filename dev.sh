@@ -21,7 +21,7 @@ case "${1:-dev}" in
   imagem-android) podman build -t "$IMG_AND" -f Containerfile.android . ;;
   install)        run "$IMG" npm install ;;
   dev)            run -p 5173:5173 "$IMG" ;;
-  tiles)          run "$IMG" npm run tiles ;;
+  exemplo)        run "$IMG" npm run --silent exemplo ;;
   build)          run "$IMG" npm run build ;;
   test)           run "$IMG" npm test ;;
   validar)        shift; run "$IMG" npm run --silent validar -- "$@" ;;

@@ -1,0 +1,409 @@
+{
+  "formato": 1,
+  "id": "holambra-2026-11",
+  "titulo": "Holambra 💐",
+  "subtitulo": "Holambra · 14 e 15 de novembro",
+  "fuso": "America/Sao_Paulo",
+  "moeda": "BRL",
+  "cores": {
+    "tema": "#E8613C"
+  },
+  "dias": [
+    {
+      "id": "sab",
+      "data": "2026-11-14",
+      "rotulo": "Sáb 14/11",
+      "cor": "#6B4FD8",
+      "paradas": [
+        {
+          "id": "s1",
+          "hora": "06:45",
+          "nome": "Café da manhã reforçado",
+          "categoria": "refeicao",
+          "obs": "Em casa · separar lanches",
+          "foto": {
+            "arquivo": "fotos/s1.webp",
+            "credito": "nwerneck · CC BY 3.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:Pao_de_queijo_com_cafe.jpg"
+          ]
+        },
+        {
+          "id": "s2",
+          "hora": "08:00",
+          "nome": "Retirada do carro – Localiza",
+          "categoria": "transporte",
+          "obs": "Osasco",
+          "foto": {
+            "arquivo": "fotos/s2.webp",
+            "credito": "Just a Man · CC BY 4.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:2023_Chevrolet_Onix_1.2_Ecotec_MT.jpg"
+          ]
+        },
+        {
+          "id": "s3",
+          "hora": "10:30",
+          "nome": "Moinho Povos Unidos",
+          "categoria": "passeio",
+          "obs": "Estacionar e seguir a pé · 2x1 Prime",
+          "local": {
+            "lat": -22.6232484,
+            "lng": -47.0602314
+          },
+          "foto": {
+            "arquivo": "fotos/s3.webp",
+            "credito": "Marcos Jerlich · CC BY-SA 4.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:Moinho_Povos_Unidos.jpg"
+          ]
+        },
+        {
+          "id": "s4",
+          "hora": "11:45",
+          "nome": "Guarda-chuvas e Boulevard",
+          "categoria": "passeio",
+          "obs": "A pé · fotos e lojinhas",
+          "local": {
+            "lat": -22.6278163,
+            "lng": -47.058702
+          },
+          "foto": {
+            "arquivo": "fotos/s4.webp",
+            "credito": "Tania Parejo · CC BY-SA 4.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:Centro_em_Holambra.jpg"
+          ]
+        },
+        {
+          "id": "s5",
+          "hora": "12:10",
+          "nome": "Deck do Amor",
+          "categoria": "passeio",
+          "obs": "A pé · cadeados e lago",
+          "local": {
+            "lat": -22.6314432,
+            "lng": -47.0577998
+          },
+          "foto": {
+            "arquivo": "fotos/s5.webp",
+            "credito": "Tania Parejo · CC BY-SA 4.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:Fonte_em_Holambra.jpg"
+          ]
+        },
+        {
+          "id": "s6",
+          "hora": "12:30",
+          "nome": "Dona Maura Gastronomia",
+          "categoria": "refeicao",
+          "obs": "Almoço com Prime",
+          "funcionamento": "Sábado até 16h",
+          "local": {
+            "lat": -22.6339155,
+            "lng": -47.0498621
+          },
+          "foto": {
+            "arquivo": "fotos/s6.webp",
+            "credito": "Bradleyzm · CC BY-SA 4.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:Feijoada_à_brasileira_-02.jpg"
+          ]
+        },
+        {
+          "id": "s7",
+          "hora": "14:00",
+          "nome": "Passeio pelo centro",
+          "categoria": "passeio",
+          "obs": "Voltar ao carro",
+          "foto": {
+            "arquivo": "fotos/s7.webp",
+            "credito": "Tania Parejo · CC BY-SA 4.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:Centro_Holambra.jpg"
+          ]
+        },
+        {
+          "id": "s8",
+          "hora": "15:15",
+          "nome": "Royal Tulip Holambra",
+          "categoria": "hospedagem",
+          "obs": "Check-in · jantar 20h",
+          "local": {
+            "lat": -22.6245803,
+            "lng": -47.0757293
+          },
+          "foto": {
+            "arquivo": "fotos/s8.webp",
+            "credito": "Royal Tulip Holambra · Tripadvisor"
+          },
+          "fontes": [
+            "https://media-cdn.tripadvisor.com/media/photo-s/25/dc/b9/6b/piscina-externa-adulto.jpg"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dom",
+      "data": "2026-11-15",
+      "rotulo": "Dom 15/11",
+      "cor": "#E8613C",
+      "paradas": [
+        {
+          "id": "d1",
+          "hora": "08:00",
+          "nome": "Café da manhã – Royal Tulip",
+          "categoria": "refeicao",
+          "obs": "Piscina e jardins",
+          "funcionamento": "Check-out 11h",
+          "local": {
+            "lat": -22.6245803,
+            "lng": -47.0757293
+          },
+          "foto": {
+            "arquivo": "fotos/d1.webp",
+            "credito": "Matt @ PEK · CC BY-SA 2.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:In_suite_breakfast_experience_(3119861609).jpg"
+          ]
+        },
+        {
+          "id": "d2",
+          "hora": "11:15",
+          "nome": "Macena Flores",
+          "categoria": "passeio",
+          "obs": "2x1 Prime",
+          "funcionamento": "9h–17h",
+          "local": {
+            "lat": -22.613718,
+            "lng": -47.0510292
+          },
+          "foto": {
+            "arquivo": "fotos/d2.webp",
+            "credito": "Tania Parejo · CC BY-SA 4.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:Flores_Holambra.jpg"
+          ]
+        },
+        {
+          "id": "d3",
+          "hora": "13:00",
+          "nome": "Restaurante Lago do Holandês",
+          "categoria": "refeicao",
+          "obs": "Almoço",
+          "funcionamento": "Domingo até 16h30",
+          "local": {
+            "lat": -22.6364421,
+            "lng": -47.0514755
+          },
+          "foto": {
+            "arquivo": "fotos/d3.webp",
+            "credito": "Isack Ryuji Minowa · CC BY-SA 3.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:Lago_-_2011-10-01_-_Isack_-_panoramio.jpg"
+          ]
+        },
+        {
+          "id": "d4",
+          "hora": "14:45",
+          "nome": "Parque Van Gogh",
+          "categoria": "passeio",
+          "obs": "Ao lado do restaurante",
+          "funcionamento": "Até 18h",
+          "local": {
+            "lat": -22.6378139,
+            "lng": -47.0522573
+          },
+          "foto": {
+            "arquivo": "fotos/d4.webp",
+            "credito": "Arjen van Reeven · CC BY 2.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:GirassolHolambra.jpg"
+          ]
+        },
+        {
+          "id": "d5",
+          "hora": "16:00",
+          "nome": "Volta para Osasco",
+          "categoria": "transporte",
+          "obs": "Devolver o carro na Localiza",
+          "foto": {
+            "arquivo": "fotos/d5.webp",
+            "credito": "Felipeattilio · CC BY-SA 3.0"
+          },
+          "fontes": [
+            "https://commons.wikimedia.org/wiki/File:Rodovia-dos-Bandeirantes-sentido-Capital-Interior.JPG"
+          ]
+        }
+      ]
+    }
+  ],
+  "checklist": [
+    {
+      "id": "antes",
+      "titulo": "Antes da viagem",
+      "itens": [
+        {
+          "id": "antes-1",
+          "texto": "Confirmar reserva com o hotel"
+        },
+        {
+          "id": "antes-2",
+          "texto": "Reservar jantar de sábado no hotel"
+        },
+        {
+          "id": "antes-3",
+          "texto": "Incluir café da manhã de domingo"
+        },
+        {
+          "id": "antes-4",
+          "texto": "Separar vouchers Prime (Moinho, Dona Maura, Macena)"
+        },
+        {
+          "id": "antes-5",
+          "texto": "Confirmar horário de devolução do carro"
+        },
+        {
+          "id": "antes-6",
+          "texto": "Importar esta viagem no app"
+        }
+      ]
+    },
+    {
+      "id": "bagagem",
+      "titulo": "Bagagem",
+      "itens": [
+        {
+          "id": "bagagem-1",
+          "texto": "Óculos de sol"
+        },
+        {
+          "id": "bagagem-2",
+          "texto": "Documentos e CNH"
+        },
+        {
+          "id": "bagagem-3",
+          "texto": "Carregador e power bank"
+        },
+        {
+          "id": "bagagem-4",
+          "texto": "Protetor solar e boné"
+        },
+        {
+          "id": "bagagem-5",
+          "texto": "Roupa para o jantar"
+        }
+      ]
+    },
+    {
+      "id": "dia",
+      "titulo": "Dia da viagem",
+      "itens": [
+        {
+          "id": "dia-1",
+          "texto": "Abastecer o carro"
+        },
+        {
+          "id": "dia-2",
+          "texto": "Conferir pneus"
+        },
+        {
+          "id": "dia-3",
+          "texto": "Lanches e água no carro"
+        },
+        {
+          "id": "dia-4",
+          "texto": "Celular carregado"
+        }
+      ]
+    }
+  ],
+  "orcamento": {
+    "caixinhas": [
+      {
+        "id": "combustivel",
+        "nome": "Combustível e pedágio",
+        "icone": "combustivel",
+        "cor": "#0EA5E9",
+        "limite": 0
+      },
+      {
+        "id": "passeios",
+        "nome": "Pontos turísticos",
+        "icone": "passeios",
+        "cor": "#10B981",
+        "limite": 0
+      },
+      {
+        "id": "restaurantes",
+        "nome": "Restaurantes",
+        "icone": "restaurantes",
+        "cor": "#F59E0B",
+        "limite": 0
+      },
+      {
+        "id": "hospedagem",
+        "nome": "Hospedagem",
+        "icone": "hospedagem",
+        "cor": "#6B4FD8",
+        "limite": 0
+      },
+      {
+        "id": "carro",
+        "nome": "Aluguel do carro",
+        "icone": "carro",
+        "cor": "#0369A1",
+        "limite": 0
+      },
+      {
+        "id": "especial",
+        "nome": "Especial",
+        "icone": "especial",
+        "cor": "#E8613C",
+        "limite": 0
+      },
+      {
+        "id": "lembrancinhas",
+        "nome": "Lembrancinhas",
+        "icone": "compras",
+        "cor": "#EC4899",
+        "limite": 0
+      },
+      {
+        "id": "extras",
+        "nome": "Extras",
+        "icone": "extras",
+        "cor": "#78716C",
+        "limite": 0
+      }
+    ]
+  },
+  "mapa": {
+    "bbox": [
+      -47.1,
+      -22.665,
+      -47.025,
+      -22.585
+    ],
+    "zooms": [
+      14,
+      16
+    ]
+  },
+  "pendencias": [
+    "Endereço/coordenadas da Localiza em Osasco (s2, d5)",
+    "Confirmar horários de funcionamento (alguns de memória)",
+    "Foto s8 (hotel) sem licença livre; s2 é ilustrativa"
+  ]
+}

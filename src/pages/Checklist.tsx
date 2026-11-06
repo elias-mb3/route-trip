@@ -1,21 +1,32 @@
 import { useState } from 'react';
 import { Briefcase, Car, Check, ClipboardList, Pencil, Plus, Trash2, X, type LucideIcon } from 'lucide-react';
-import { useEstado } from '../estado';
-import { TITULOS_CHECKLIST } from '../data/roteiro';
-import { novoId } from '../lib/storage';
+import { useViagem } from '../estado';
+import { novoId } from '../lib/geo';
 import Topo from '../components/Topo';
-import type { ItemChecklist, SecaoChecklist } from '../lib/types';
+import type { SecaoChecklist } from '../formato/tipos';
 
-const ICONES: Record<SecaoChecklist, LucideIcon> = { antes: ClipboardList, bagagem: Briefcase, dia: Car };
+type Item = SecaoChecklist['itens'][number];
+
+const ICONES: LucideIcon[] = [ClipboardList, Briefcase, Car];
 
 export default function Checklist() {
-  const { checklist, setChecklist } = useEstado();
-  const alterar = (s: SecaoChecklist, fn: (itens: ItemChecklist[]) => ItemChecklist[]) =>
-    setChecklist((c) => ({ ...c, [s]: fn(c[s]) }));
+  const { viagem, setViagem, estado, setEstado } = useViagem();
+  const marcado = (id: string) => !!estado.checklist[id];
+  const alterarSecao = (sid: string, fn: (s: SecaoChecklist) => SecaoChecklist | null) =>
+    setViagem((v) => ({ ...v, checklist: v.checklist.flatMap((s) => (s.id === sid ? (fn(s) ?? []) : [s])) }));
+  const alternar = (id: string) => setEstado((e) => {
+    const checklist = { ...e.checklist };
+    if (checklist[id]) delete checklist[id]; else checklist[id] = true;
+    return { ...e, checklist };
+  });
 
-  const todos = Object.values(checklist).flat();
-  const feitos = todos.filter((i) => i.feito).length;
+  const todos = viagem.checklist.flatMap((s) => s.itens);
+  const feitos = todos.filter((i) => marcado(i.id)).length;
   const pct = todos.length ? Math.round((feitos / todos.length) * 100) : 0;
+  const novaSecao = () => {
+    const titulo = prompt('Nome da nova seção (ex.: Bagagem)')?.trim();
+    if (titulo) setViagem((v) => ({ ...v, checklist: [...v.checklist, { id: novoId('s'), titulo, itens: [] }] }));
+  };
 
   return (
     <div>
@@ -29,9 +40,13 @@ export default function Checklist() {
         </div>
       </Topo>
       <div className="space-y-4">
-        {(Object.keys(TITULOS_CHECKLIST) as SecaoChecklist[]).map((s) => (
-          <Secao key={s} titulo={TITULOS_CHECKLIST[s]} Icone={ICONES[s]} itens={checklist[s]} alterar={(fn) => alterar(s, fn)} />
+        {viagem.checklist.map((s, i) => (
+          <Secao key={s.id} secao={s} Icone={ICONES[i % ICONES.length]} marcado={marcado} alternar={alternar}
+            alterar={(fn) => alterarSecao(s.id, fn)} />
         ))}
+        <button onClick={novaSecao} className="flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-stone-300 py-4 text-sm font-semibold text-stone-500 active:scale-[0.98]">
+          <Plus size={18} /> Nova seção
+        </button>
       </div>
     </div>
   );
@@ -49,33 +64,42 @@ function Anel({ pct }: { pct: number }) {
   );
 }
 
-function Secao({ titulo, Icone, itens, alterar }: {
-  titulo: string; Icone: LucideIcon; itens: ItemChecklist[]; alterar: (fn: (i: ItemChecklist[]) => ItemChecklist[]) => void;
+function Secao({ secao, Icone, marcado, alternar, alterar }: {
+  secao: SecaoChecklist; Icone: LucideIcon; marcado: (id: string) => boolean; alternar: (id: string) => void;
+  alterar: (fn: (s: SecaoChecklist) => SecaoChecklist | null) => void;
 }) {
   const [novo, setNovo] = useState('');
-  const feitos = itens.filter((i) => i.feito).length;
+  const itens = secao.itens;
+  const feitos = itens.filter((i) => marcado(i.id)).length;
   const completo = itens.length > 0 && feitos === itens.length;
+  const setItens = (fn: (i: Item[]) => Item[]) => alterar((s) => ({ ...s, itens: fn(s.itens) }));
+  const renomear = () => {
+    const titulo = prompt('Nome da seção (vazio = remover a seção)', secao.titulo);
+    if (titulo === null) return;
+    if (!titulo.trim()) { if (confirm(`Remover a seção "${secao.titulo}" e seus itens?`)) alterar(() => null); return; }
+    alterar((s) => ({ ...s, titulo: titulo.trim() }));
+  };
 
   return (
     <section className="cartao p-4">
       <div className="flex items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600"><Icone size={20} /></span>
-        <h2 className="flex-1 font-bold">{titulo}</h2>
+        <button onClick={renomear} className="flex-1 text-left font-bold">{secao.titulo}</button>
         <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${completo ? 'bg-emerald-500 text-white' : 'bg-stone-100 text-stone-500'}`}>
           {feitos}/{itens.length}
         </span>
       </div>
       <ul className="mt-2">
         {itens.map((item) => (
-          <Linha key={item.id} item={item}
-            onMudar={(m) => alterar((is) => is.map((i) => (i.id === item.id ? { ...i, ...m } : i)))}
-            onRemover={() => alterar((is) => is.filter((i) => i.id !== item.id))} />
+          <Linha key={item.id} item={item} feito={marcado(item.id)} onAlternar={() => alternar(item.id)}
+            onTexto={(texto) => setItens((is) => is.map((i) => (i.id === item.id ? { ...i, texto } : i)))}
+            onRemover={() => setItens((is) => is.filter((i) => i.id !== item.id))} />
         ))}
       </ul>
       <form className="mt-2 flex gap-2" onSubmit={(e) => {
         e.preventDefault();
         if (!novo.trim()) return;
-        alterar((is) => [...is, { id: novoId(), texto: novo.trim(), feito: false }]);
+        setItens((is) => [...is, { id: novoId('i'), texto: novo.trim() }]);
         setNovo('');
       }}>
         <input value={novo} onChange={(e) => setNovo(e.target.value)} placeholder="Adicionar item…" className="campo mt-0 py-2.5 text-sm" />
@@ -85,8 +109,8 @@ function Secao({ titulo, Icone, itens, alterar }: {
   );
 }
 
-function Linha({ item, onMudar, onRemover }: {
-  item: ItemChecklist; onMudar: (m: Partial<ItemChecklist>) => void; onRemover: () => void;
+function Linha({ item, feito, onAlternar, onTexto, onRemover }: {
+  item: Item; feito: boolean; onAlternar: () => void; onTexto: (t: string) => void; onRemover: () => void;
 }) {
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(item.texto);
@@ -95,7 +119,7 @@ function Linha({ item, onMudar, onRemover }: {
     return (
       <li className="flex items-center gap-1 py-1.5">
         <input autoFocus value={texto} onChange={(e) => setTexto(e.target.value)} className="campo mt-0 py-2 text-sm" />
-        <button aria-label="Salvar" onClick={() => { if (texto.trim()) onMudar({ texto: texto.trim() }); setEditando(false); }}
+        <button aria-label="Salvar" onClick={() => { if (texto.trim()) onTexto(texto.trim()); setEditando(false); }}
           className="flex h-10 w-10 items-center justify-center text-emerald-600"><Check size={18} /></button>
         <button aria-label="Cancelar" onClick={() => { setTexto(item.texto); setEditando(false); }}
           className="flex h-10 w-10 items-center justify-center text-stone-400"><X size={18} /></button>
@@ -104,12 +128,12 @@ function Linha({ item, onMudar, onRemover }: {
   }
   return (
     <li className="group flex items-center gap-1">
-      <button onClick={() => onMudar({ feito: !item.feito })} aria-pressed={item.feito}
+      <button onClick={onAlternar} aria-pressed={feito}
         className="flex min-h-12 flex-1 items-center gap-3 py-1 text-left active:opacity-70">
-        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition ${item.feito ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-stone-300 text-transparent'}`}>
+        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition ${feito ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-stone-300 text-transparent'}`}>
           <Check size={15} strokeWidth={3} />
         </span>
-        <span className={`text-[15px] ${item.feito ? 'text-stone-400 line-through' : ''}`}>{item.texto}</span>
+        <span className={`text-[15px] ${feito ? 'text-stone-400 line-through' : ''}`}>{item.texto}</span>
       </button>
       <button aria-label="Editar" onClick={() => setEditando(true)} className="flex h-10 w-9 items-center justify-center text-stone-300 active:text-stone-600"><Pencil size={15} /></button>
       <button aria-label="Remover" onClick={() => confirm(`Remover "${item.texto}"?`) && onRemover()} className="flex h-10 w-9 items-center justify-center text-stone-300 active:text-stone-600"><Trash2 size={15} /></button>

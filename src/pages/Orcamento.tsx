@@ -2,13 +2,15 @@ import { useState } from 'react';
 import {
   BedDouble, Car, Check, Fuel, Gem, Plus, ShoppingBag, Sparkles, Tag, Ticket, Utensils, type LucideIcon,
 } from 'lucide-react';
-import { useEstado } from '../estado';
-import { brl } from '../lib/datas';
-import { novoId } from '../lib/storage';
+import { useViagem } from '../estado';
+import { dinheiro } from '../lib/datas';
+import { novoId } from '../lib/geo';
 import Topo from '../components/Topo';
 import FolhaInferior from '../components/FolhaInferior';
-import BackupOrcamento from '../components/BackupOrcamento';
-import type { Caixinha, Despesa } from '../lib/types';
+import type { Caixinha, Despesa } from '../formato/tipos';
+
+// moeda da viagem ativa (definida em Orcamento)
+let brl = (v: number) => dinheiro(v);
 
 export const ICONES_CAIXINHA: Record<string, LucideIcon> = {
   combustivel: Fuel, passeios: Ticket, restaurantes: Utensils, hospedagem: BedDouble,
@@ -25,47 +27,47 @@ const fmt = (n?: number) => (n ? n.toString().replace('.', ',') : '');
 const soma = (ds: Despesa[]) => ds.reduce((s, d) => s + d.valor, 0);
 
 export default function Orcamento() {
-  const { orcamento, setOrcamento } = useEstado();
-  const { caixinhas, despesas } = orcamento;
+  const { viagem, setViagem, estado, setEstado } = useViagem();
+  brl = (v: number) => dinheiro(v, viagem.moeda);
+  const { caixinhas } = viagem.orcamento;
+  const { despesas } = estado;
+  const setDespesas = (fn: (d: Despesa[]) => Despesa[]) => setEstado((e) => ({ ...e, despesas: fn(e.despesas) }));
+  const setCaixinhas = (fn: (c: Caixinha[]) => Caixinha[]) => setViagem((v) => ({ ...v, orcamento: { ...v.orcamento, caixinhas: fn(v.orcamento.caixinhas) } }));
+  const dias = [{ id: 'antes', rotulo: 'Antes' }, ...viagem.dias.map((d) => ({ id: d.id, rotulo: d.rotulo }))];
   const [aberta, setAberta] = useState<string | null>(null);
   const [caixinhaEditada, setCaixinhaEditada] = useState<Caixinha | null>(null);
   const [despesa, setDespesa] = useState<Despesa | null>(null);
 
   const planejado = caixinhas.reduce((s, c) => s + c.limite, 0);
   const gasto = soma(despesas);
-  const economia = despesas.reduce((s, d) => s + (d.economiaPrime ?? 0), 0);
+  const economia = despesas.reduce((s, d) => s + (d.economia ?? 0), 0);
   const saldo = planejado - gasto;
   const usado = planejado ? Math.min(100, (gasto / planejado) * 100) : 0;
   const caixinhaAberta = caixinhas.find((c) => c.id === aberta);
 
   const salvarDespesa = (d: Despesa) => {
-    setOrcamento((o) => ({
-      ...o,
-      despesas: o.despesas.some((x) => x.id === d.id) ? o.despesas.map((x) => (x.id === d.id ? d : x)) : [...o.despesas, d],
-    }));
+    setDespesas((ds) => (ds.some((x) => x.id === d.id) ? ds.map((x) => (x.id === d.id ? d : x)) : [...ds, d]));
     setDespesa(null);
   };
   const removerDespesa = (d: Despesa) => {
     if (!confirm(`Remover "${d.descricao}"?`)) return;
-    setOrcamento((o) => ({ ...o, despesas: o.despesas.filter((x) => x.id !== d.id) }));
+    setDespesas((ds) => ds.filter((x) => x.id !== d.id));
     setDespesa(null);
   };
   const salvarCaixinha = (c: Caixinha) => {
-    setOrcamento((o) => ({
-      ...o,
-      caixinhas: o.caixinhas.some((x) => x.id === c.id) ? o.caixinhas.map((x) => (x.id === c.id ? c : x)) : [...o.caixinhas, c],
-    }));
+    setCaixinhas((cs) => (cs.some((x) => x.id === c.id) ? cs.map((x) => (x.id === c.id ? c : x)) : [...cs, c]));
     setCaixinhaEditada(null);
   };
   const removerCaixinha = (c: Caixinha) => {
     const n = despesas.filter((d) => d.caixinha === c.id).length;
     if (!confirm(n ? `Remover "${c.nome}" e seus ${n} gasto(s)?` : `Remover "${c.nome}"?`)) return;
-    setOrcamento((o) => ({ caixinhas: o.caixinhas.filter((x) => x.id !== c.id), despesas: o.despesas.filter((d) => d.caixinha !== c.id) }));
+    setCaixinhas((cs) => cs.filter((x) => x.id !== c.id));
+    setDespesas((ds) => ds.filter((d) => d.caixinha !== c.id));
     setCaixinhaEditada(null);
     setAberta(null);
   };
   const novaDespesa = (caixinha: string) =>
-    setDespesa({ id: novoId(), descricao: '', caixinha, valor: 0, dia: 'Sáb', pagamento: '', pago: false });
+    setDespesa({ id: novoId('g'), descricao: '', caixinha, valor: 0, dia: dias.find((d) => d.id !== 'antes')!.id, pagamento: '', pago: false });
 
   return (
     <div>
@@ -81,7 +83,7 @@ export default function Orcamento() {
       <div className="mb-5 grid grid-cols-3 gap-2">
         <Resumo rotulo="Planejado" valor={brl(planejado)} />
         <Resumo rotulo="Gasto" valor={brl(gasto)} />
-        <Resumo rotulo="Prime 2x1" valor={brl(economia)} cor="text-laranja" />
+        <Resumo rotulo="Economia" valor={brl(economia)} cor="text-laranja" />
       </div>
 
       <h2 className="mb-3 text-lg font-bold">Caixinhas</h2>
@@ -89,19 +91,18 @@ export default function Orcamento() {
         {caixinhas.map((c) => (
           <CartaoCaixinha key={c.id} caixinha={c} gasto={soma(despesas.filter((d) => d.caixinha === c.id))} onClick={() => setAberta(c.id)} />
         ))}
-        <button onClick={() => setCaixinhaEditada({ id: novoId(), nome: '', icone: 'extras', cor: CORES_NOVA[caixinhas.length % CORES_NOVA.length], limite: 0 })}
+        <button onClick={() => setCaixinhaEditada({ id: novoId('c'), nome: '', icone: 'extras', cor: CORES_NOVA[caixinhas.length % CORES_NOVA.length], limite: 0 })}
           className="flex min-h-[9.5rem] flex-col items-center justify-center gap-1 rounded-3xl border-2 border-dashed border-stone-300 text-sm font-semibold text-stone-500 active:scale-[0.98]">
           <Plus size={22} /> Nova caixinha
         </button>
       </div>
 
-      <BackupOrcamento />
 
       {caixinhaAberta && !caixinhaEditada && !despesa && (
         <FolhaInferior titulo={caixinhaAberta.nome} onFechar={() => setAberta(null)}>
           <DetalheCaixinha caixinha={caixinhaAberta} despesas={despesas.filter((d) => d.caixinha === caixinhaAberta.id)}
             onEditar={() => setCaixinhaEditada(caixinhaAberta)} onNova={() => novaDespesa(caixinhaAberta.id)}
-            onAbrir={setDespesa} onAlternarPago={(d) => salvarDespesa({ ...d, pago: !d.pago })} />
+            dias={dias} onAbrir={setDespesa} onAlternarPago={(d) => salvarDespesa({ ...d, pago: !d.pago })} />
         </FolhaInferior>
       )}
       {caixinhaEditada && (
@@ -109,7 +110,7 @@ export default function Orcamento() {
           onSalvar={salvarCaixinha} onRemover={() => removerCaixinha(caixinhaEditada)} onFechar={() => setCaixinhaEditada(null)} />
       )}
       {despesa && (
-        <FormDespesa inicial={despesa} caixinhas={caixinhas} existe={despesas.some((x) => x.id === despesa.id)}
+        <FormDespesa inicial={despesa} caixinhas={caixinhas} dias={dias} existe={despesas.some((x) => x.id === despesa.id)}
           onSalvar={salvarDespesa} onRemover={() => removerDespesa(despesa)} onFechar={() => setDespesa(null)} />
       )}
     </div>
@@ -159,8 +160,8 @@ function CartaoCaixinha({ caixinha, gasto, onClick }: { caixinha: Caixinha; gast
   );
 }
 
-function DetalheCaixinha({ caixinha, despesas, onEditar, onNova, onAbrir, onAlternarPago }: {
-  caixinha: Caixinha; despesas: Despesa[]; onEditar: () => void; onNova: () => void;
+function DetalheCaixinha({ caixinha, despesas, dias, onEditar, onNova, onAbrir, onAlternarPago }: {
+  caixinha: Caixinha; despesas: Despesa[]; dias: { id: string; rotulo: string }[]; onEditar: () => void; onNova: () => void;
   onAbrir: (d: Despesa) => void; onAlternarPago: (d: Despesa) => void;
 }) {
   const gasto = soma(despesas);
@@ -185,13 +186,13 @@ function DetalheCaixinha({ caixinha, despesas, onEditar, onNova, onAbrir, onAlte
           <div key={d.id} className="flex items-center gap-3 rounded-2xl bg-stone-50 p-2.5">
             <button onClick={() => onAlternarPago(d)} aria-pressed={d.pago} aria-label={d.pago ? 'Marcar como não pago' : 'Marcar como pago'}
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition active:scale-90 ${d.pago ? 'bg-emerald-500 text-white' : 'bg-white text-stone-500'}`}>
-              {d.pago ? <Check size={18} strokeWidth={3} /> : d.dia}
+              {d.pago ? <Check size={18} strokeWidth={3} /> : (dias.find((x) => x.id === d.dia)?.rotulo ?? d.dia).slice(0, 3)}
             </button>
             <button onClick={() => onAbrir(d)} className="min-w-0 flex-1 text-left">
               <p className="truncate font-semibold">{d.descricao}</p>
               <p className="flex items-center gap-1 truncate text-xs text-stone-500">
                 {d.pago ? 'pago' : 'a pagar'}{d.pagamento && ` · ${d.pagamento}`}
-                {!!d.economiaPrime && <span className="ml-1 inline-flex items-center gap-0.5 font-semibold text-laranja"><Tag size={11} />−{brl(d.economiaPrime)}</span>}
+                {!!d.economia && <span className="ml-1 inline-flex items-center gap-0.5 font-semibold text-laranja"><Tag size={11} />−{brl(d.economia)}</span>}
               </p>
             </button>
             <button onClick={() => onAbrir(d)} className="shrink-0 font-bold tabular-nums">{brl(d.valor)}</button>
@@ -230,14 +231,14 @@ function FormCaixinha({ inicial, existe, onSalvar, onRemover, onFechar }: {
   const [limite, setLimite] = useState(fmt(inicial.limite));
   return (
     <FolhaInferior titulo={existe ? 'Editar caixinha' : 'Nova caixinha'} onFechar={onFechar}>
-      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (c.nome.trim()) onSalvar({ ...c, limite: lerValor(limite) }); }}>
+      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (c.nome.trim()) onSalvar({ ...c, limite: lerValor(limite), icone: c.icone as Caixinha['icone'] }); }}>
         <label className={rotulo}>Valor planejado<CampoValor valor={limite} onChange={setLimite} autoFocus={existe} /></label>
         <label className={rotulo}>Nome<input required autoFocus={!existe} value={c.nome} onChange={(e) => setC({ ...c, nome: e.target.value })} className="campo" /></label>
         <div>
           <span className={rotulo}>Ícone</span>
           <div className="mt-1 grid grid-cols-8 gap-1">
             {Object.entries(ICONES_CAIXINHA).map(([chave, Icone]) => (
-              <button type="button" key={chave} onClick={() => setC({ ...c, icone: chave })} aria-label={chave}
+              <button type="button" key={chave} onClick={() => setC({ ...c, icone: chave as Caixinha['icone'] })} aria-label={chave}
                 className={`flex aspect-square items-center justify-center rounded-xl ${c.icone === chave ? 'text-white' : 'bg-stone-100 text-stone-500'}`}
                 style={c.icone === chave ? { background: c.cor } : undefined}>
                 <Icone size={18} />
@@ -263,11 +264,11 @@ function FormCaixinha({ inicial, existe, onSalvar, onRemover, onFechar }: {
   );
 }
 
-function FormDespesa({ inicial, caixinhas, existe, onSalvar, onRemover, onFechar }: {
-  inicial: Despesa; caixinhas: Caixinha[]; existe: boolean; onSalvar: (d: Despesa) => void; onRemover: () => void; onFechar: () => void;
+function FormDespesa({ inicial, caixinhas, dias, existe, onSalvar, onRemover, onFechar }: {
+  inicial: Despesa; caixinhas: Caixinha[]; dias: { id: string; rotulo: string }[]; existe: boolean; onSalvar: (d: Despesa) => void; onRemover: () => void; onFechar: () => void;
 }) {
   const [d, setD] = useState(inicial);
-  const [txt, setTxt] = useState({ valor: fmt(inicial.valor), prime: fmt(inicial.economiaPrime) });
+  const [txt, setTxt] = useState({ valor: fmt(inicial.valor), prime: fmt(inicial.economia) });
   const valor = lerValor(txt.valor);
 
   return (
@@ -275,7 +276,7 @@ function FormDespesa({ inicial, caixinhas, existe, onSalvar, onRemover, onFechar
       <form className="space-y-3" onSubmit={(e) => {
         e.preventDefault();
         if (!d.descricao.trim()) return;
-        onSalvar({ ...d, valor, economiaPrime: lerValor(txt.prime) || undefined });
+        onSalvar({ ...d, valor, economia: lerValor(txt.prime) || undefined });
       }}>
         <label className={rotulo}>Valor<CampoValor valor={txt.valor} onChange={(v) => setTxt({ ...txt, valor: v })} autoFocus={!existe} /></label>
         <label className={rotulo}>Descrição<input required value={d.descricao} onChange={(e) => setD({ ...d, descricao: e.target.value })} placeholder="Ex.: pedágio Bandeirantes" className="campo" /></label>
@@ -293,10 +294,10 @@ function FormDespesa({ inicial, caixinhas, existe, onSalvar, onRemover, onFechar
 
         <div>
           <span className={rotulo}>Dia</span>
-          <div className="mt-1 grid grid-cols-3 gap-1 rounded-2xl bg-stone-100 p-1">
-            {(['Antes', 'Sáb', 'Dom'] as const).map((x) => (
-              <button type="button" key={x} onClick={() => setD({ ...d, dia: x })}
-                className={`rounded-xl py-2 text-sm font-semibold ${d.dia === x ? 'bg-white shadow-sm' : 'text-stone-500'}`}>{x}</button>
+          <div className="sem-barra mt-1 flex gap-1 overflow-x-auto rounded-2xl bg-stone-100 p-1">
+            {dias.map((x) => (
+              <button type="button" key={x.id} onClick={() => setD({ ...d, dia: x.id })}
+                className={`shrink-0 grow rounded-xl px-3 py-2 text-sm font-semibold ${d.dia === x.id ? 'bg-white shadow-sm' : 'text-stone-500'}`}>{x.rotulo}</button>
             ))}
           </div>
         </div>
@@ -304,7 +305,7 @@ function FormDespesa({ inicial, caixinhas, existe, onSalvar, onRemover, onFechar
         <label className={rotulo}>Forma de pagamento<input value={d.pagamento} onChange={(e) => setD({ ...d, pagamento: e.target.value })} placeholder="Pix, crédito, dinheiro…" className="campo" /></label>
 
         <div className="rounded-2xl bg-orange-50 p-3">
-          <span className="block text-xs font-semibold text-orange-900">Desconto Prime Gourmet (2x1) – economia</span>
+          <span className="block text-xs font-semibold text-orange-900">Desconto obtido (ex.: 2x1) – economia</span>
           <div className="flex gap-2">
             <input inputMode="decimal" value={txt.prime} onChange={(e) => setTxt({ ...txt, prime: e.target.value })} placeholder="opcional" className="campo bg-white" />
             <button type="button" disabled={!valor} onClick={() => setTxt({ ...txt, prime: fmt(valor) })}

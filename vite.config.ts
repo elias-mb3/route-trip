@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png', 'icons/*.svg'],
       manifest: {
-        name: 'Holambra 14–15/11',
-        short_name: 'Holambra',
+        name: 'Viagem',
+        short_name: 'Viagem',
         lang: 'pt-BR',
         start_url: './',
         scope: './',

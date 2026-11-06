@@ -1,24 +1,20 @@
 import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ChevronRight, ExternalLink, LocateFixed } from 'lucide-react';
-import { useEstado } from '../estado';
-import { CORES, ROTULOS } from '../lib/datas';
+import { useViagem } from '../estado';
+import { corDia } from '../lib/datas';
 import { linkRota } from '../lib/geo';
 import Capa from '../components/Capa';
 import LinkExterno from '../components/LinkExterno';
-import type { DiaId, Parada } from '../lib/types';
+import TileLayerIDB from '../components/TileLayerIDB';
+import type { Parada } from '../formato/tipos';
 
-type Filtro = DiaId | 'ambos';
-type Ponto = Parada & { dia: DiaId; n: number; lat: number; lng: number };
+type Ponto = Parada & { dia: string; cor: string; rotuloDia: string; n: number; lat: number; lng: number };
 
-// PNG 1x1 transparente: tile ausente mostra o fundo neutro do container
-const TILE_VAZIO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 const chave = (p: Ponto) => `${p.dia}-${p.id}`;
-// Área dos tiles baixados (BBOX em scripts/baixar-tiles.mjs): o mapa não sai dela
-const AREA_TILES = L.latLngBounds([-22.665, -47.10], [-22.585, -47.025]);
 // Cor de "terreno" do OSM: enquanto um tile carrega, o buraco não aparece cinza
 const FUNDO_MAPA = '#f2efe9';
 
@@ -31,17 +27,24 @@ const icone = (n: number, cor: string, ativo: boolean) =>
   });
 
 export default function Mapa() {
-  const { roteiro } = useEstado();
+  const { viagem } = useViagem();
   const [params, setParams] = useSearchParams();
-  const filtro = (params.get('dia') as Filtro) ?? 'ambos';
+  const filtro = params.get('dia') ?? 'todos';
+  // Área do pacote de tiles: o mapa não sai dela. Sem pacote, enquadra as paradas.
+  const area = useMemo(() => {
+    if (!viagem.mapa) return undefined;
+    const [o, s, l, n] = viagem.mapa.bbox;
+    return L.latLngBounds([s, o], [n, l]);
+  }, [viagem.mapa]);
+  const zooms = viagem.mapa?.zooms ?? [3, 16];
   const foco = params.get('foco');
 
   const pontos = useMemo(() => {
-    const dias: DiaId[] = filtro === 'ambos' ? ['sab', 'dom'] : [filtro];
-    return dias.flatMap((dia) => roteiro[dia]
-      .filter((p): p is Parada & { lat: number; lng: number } => p.lat != null && p.lng != null)
-      .map((p, i) => ({ ...p, dia, n: i + 1 }) as Ponto));
-  }, [roteiro, filtro]);
+    const dias = filtro === 'todos' ? viagem.dias : viagem.dias.filter((d) => d.id === filtro);
+    return dias.flatMap((d) => d.paradas.filter((p) => p.local)
+      .map((p, i): Ponto => ({ ...p, dia: d.id, cor: corDia(viagem, d), rotuloDia: d.rotulo, n: i + 1, lat: p.local!.lat, lng: p.local!.lng })));
+  }, [viagem, filtro]);
+  const centro = pontos[0] ?? (area ? { lat: area.getCenter().lat, lng: area.getCenter().lng } : { lat: -15.8, lng: -47.9 });
 
   const [ativo, setAtivo] = useState<string | null>(null);
   useEffect(() => {
@@ -58,29 +61,28 @@ export default function Mapa() {
   return (
     <div className="fixed inset-0" style={{ background: FUNDO_MAPA }}>
       <LimiteErro fallback={<ListaLocais pontos={pontos} />}>
-        <MapContainer center={[-22.628, -47.06]} zoom={14.5} minZoom={14} maxZoom={17} zoomControl={false}
-          zoomSnap={0.25} zoomDelta={0.5} maxBounds={AREA_TILES} maxBoundsViscosity={1} bounceAtZoomLimits={false} inertia={false}
+        <MapContainer center={[centro.lat, centro.lng]} zoom={zooms[0] + 0.5} minZoom={zooms[0]} maxZoom={zooms[1] + 1} zoomControl={false}
+          zoomSnap={0.25} zoomDelta={0.5} maxBounds={area} maxBoundsViscosity={1} bounceAtZoomLimits={false} inertia={false}
           className="h-full w-full" style={{ background: FUNDO_MAPA }}>
-          <TileLayer url="tiles/{z}/{x}/{y}.png" errorTileUrl={TILE_VAZIO} maxNativeZoom={16} keepBuffer={8}
-            bounds={AREA_TILES} attribution="© OpenStreetMap" />
-          {(['sab', 'dom'] as DiaId[]).map((dia) => {
-            const ps = pontos.filter((p) => p.dia === dia);
-            return ps.length > 1 && <Polyline key={dia} positions={ps.map((p) => [p.lat, p.lng])} pathOptions={{ color: CORES[dia], weight: 4, dashArray: '6 8' }} />;
+          <TileLayerIDB viagemId={viagem.id} bounds={area} maxNativeZoom={zooms[1]} />
+          {viagem.dias.map((d) => {
+            const ps = pontos.filter((p) => p.dia === d.id);
+            return ps.length > 1 && <Polyline key={d.id} positions={ps.map((p) => [p.lat, p.lng])} pathOptions={{ color: corDia(viagem, d), weight: 4, dashArray: '6 8' }} />;
           })}
           {pontos.map((p) => (
-            <Marker key={chave(p)} position={[p.lat, p.lng]} icon={icone(p.n, CORES[p.dia], ativo === chave(p))}
+            <Marker key={chave(p)} position={[p.lat, p.lng]} icon={icone(p.n, p.cor, ativo === chave(p))}
               zIndexOffset={ativo === chave(p) ? 1000 : 0} eventHandlers={{ click: () => selecionar(p) }} />
           ))}
-          <Controlador pontos={pontos} ativo={pontos.find((p) => chave(p) === ativo)} />
+          <Controlador pontos={pontos} area={area} ativo={pontos.find((p) => chave(p) === ativo)} />
         </MapContainer>
 
         {/* filtros flutuando no topo */}
-        <div className="absolute inset-x-0 z-[1000] flex justify-center gap-2 px-4" style={{ top: 'calc(env(safe-area-inset-top) + 2.75rem)' }}>
-          {(['sab', 'dom', 'ambos'] as Filtro[]).map((f) => (
-            <button key={f} onClick={() => setParams({ dia: f })}
-              className={`chip shadow-md ${filtro === f ? 'text-white' : 'bg-white text-stone-600'}`}
-              style={filtro === f ? { background: f === 'ambos' ? '#292524' : CORES[f] } : undefined}>
-              {f === 'ambos' ? 'Ambos' : f === 'sab' ? 'Sábado' : 'Domingo'}
+        <div className="sem-barra absolute inset-x-0 z-[1000] flex justify-center gap-2 overflow-x-auto px-4" style={{ top: 'calc(env(safe-area-inset-top) + 2.75rem)' }}>
+          {viagem.dias.length > 1 && [{ id: 'todos', rotulo: 'Todos', cor: '#292524' }, ...viagem.dias.map((d) => ({ id: d.id, rotulo: d.rotulo, cor: corDia(viagem, d) }))].map((f) => (
+            <button key={f.id} onClick={() => setParams({ dia: f.id })}
+              className={`chip shrink-0 shadow-md ${filtro === f.id ? 'text-white' : 'bg-white text-stone-600'}`}
+              style={filtro === f.id ? { background: f.cor } : undefined}>
+              {f.rotulo}
             </button>
           ))}
         </div>
@@ -91,10 +93,10 @@ export default function Mapa() {
           {pontos.map((p) => (
             <div role="button" tabIndex={0} key={chave(p)} data-chave={chave(p)} onClick={() => setAtivo(chave(p))}
               className={`cartao flex w-[78%] max-w-xs shrink-0 snap-center items-center gap-3 p-2.5 text-left transition ${ativo === chave(p) ? 'ring-2' : ''}`}
-              style={ativo === chave(p) ? { boxShadow: `0 0 0 2px ${CORES[p.dia]}` } : undefined}>
-              <Capa id={p.id} categoria={p.categoria} tamanhoIcone={20} className="h-14 w-14 shrink-0 rounded-2xl" />
+              style={ativo === chave(p) ? { boxShadow: `0 0 0 2px ${p.cor}` } : undefined}>
+              <Capa parada={p} tamanhoIcone={20} className="h-14 w-14 shrink-0 rounded-2xl" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold" style={{ color: CORES[p.dia] }}>{p.n} · {ROTULOS[p.dia]} · {p.hora}</p>
+                <p className="text-xs font-bold" style={{ color: p.cor }}>{p.n} · {p.rotuloDia}{p.hora && ` · ${p.hora}`}</p>
                 <p className="line-clamp-2 font-semibold leading-tight">{p.nome}</p>
                 {p.obs && <p className="truncate text-xs text-stone-500">{p.obs}</p>}
               </div>
@@ -108,18 +110,19 @@ export default function Mapa() {
   );
 }
 
-function Controlador({ pontos, ativo }: { pontos: Ponto[]; ativo?: Ponto }) {
+function Controlador({ pontos, area, ativo }: { pontos: Ponto[]; area?: L.LatLngBounds; ativo?: Ponto }) {
   const map = useMap();
   const enquadrar = () => {
     if (pontos.length) map.fitBounds(pontos.map((p) => [p.lat, p.lng]), { paddingTopLeft: [24, 100], paddingBottomRight: [24, 190], maxZoom: 16 });
   };
   // Zoom mínimo = o menor que ainda deixa a tela inteira dentro da área baixada (sem fundo cinza)
   useEffect(() => {
-    const limitar = () => map.setMinZoom(map.getBoundsZoom(AREA_TILES, true));
+    if (!area) return;
+    const limitar = () => map.setMinZoom(map.getBoundsZoom(area, true));
     limitar();
     map.on('resize', limitar);
     return () => { map.off('resize', limitar); };
-  }, [map]);
+  }, [map, area]);
   useEffect(() => { enquadrar(); }, [map, pontos]);
   useEffect(() => {
     if (ativo) map.flyTo([ativo.lat, ativo.lng], Math.max(map.getZoom(), 15), { duration: 0.6 });
@@ -145,7 +148,7 @@ function ListaLocais({ pontos }: { pontos: Ponto[] }) {
       <p className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">O mapa não pôde ser carregado. Lista dos locais:</p>
       {pontos.map((p) => (
         <div key={chave(p)} className="cartao p-4">
-          <p className="text-xs font-bold" style={{ color: CORES[p.dia] }}>{ROTULOS[p.dia]} · {p.hora}</p>
+          <p className="text-xs font-bold" style={{ color: p.cor }}>{p.rotuloDia}{p.hora && ` · ${p.hora}`}</p>
           <p className="font-semibold">{p.n}. {p.nome}</p>
           <p className="font-mono text-xs text-stone-500">{p.lat.toFixed(5)}, {p.lng.toFixed(5)}</p>
           <LinkExterno href={linkRota(p)} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700">

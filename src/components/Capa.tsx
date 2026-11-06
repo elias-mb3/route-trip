@@ -1,61 +1,62 @@
 import { useEffect, useRef, useState } from 'react';
 import { Camera, Trash2 } from 'lucide-react';
-import { apagar, gravar, ler } from '../lib/storage';
+import { useViagem } from '../estado';
+import { apagarFotoUsuario, gravarFotoUsuario, lerArquivo, lerFotoUsuario } from '../viagens/repositorio';
 import { visual } from '../lib/visual';
-import { FOTOS, fotoPadrao } from '../data/fotos';
+import type { Parada } from '../formato/tipos';
 
-// Foto do local guardada no IndexedDB (Blob), com URL de objeto gerenciada
-export function useFoto(id: string) {
+// Blob cifrado → URL de objeto, revogada ao desmontar
+function useBlobUrl(carregar: () => Promise<Blob | undefined>, deps: unknown[]) {
   const [url, setUrl] = useState<string>();
+  const [versao, setVersao] = useState(0);
   useEffect(() => {
-    let atual: string | undefined;
-    ler<Blob>(`foto:${id}`).then((b) => { if (b) setUrl((atual = URL.createObjectURL(b))); });
-    return () => { if (atual) URL.revokeObjectURL(atual); };
-  }, [id]);
-  const definir = async (f: File) => { await gravar(`foto:${id}`, f); setUrl(URL.createObjectURL(f)); };
-  const remover = async () => { await apagar(`foto:${id}`); setUrl(undefined); };
-  return { url, definir, remover };
+    let atual: string | undefined, vivo = true;
+    setUrl(undefined);
+    carregar().then((b) => { if (b && vivo) setUrl((atual = URL.createObjectURL(b))); }).catch(() => {});
+    return () => { vivo = false; if (atual) URL.revokeObjectURL(atual); };
+  }, [...deps, versao]);
+  return [url, () => setVersao((v) => v + 1)] as const;
 }
 
-// Capa do local: foto do usuário, foto do local que vem com o app ou degradê + ícone da categoria. Preenche o contêiner.
-export default function Capa({ id, categoria, tamanhoIcone = 28, editavel = false, className = '', posicaoBotoes = 'bottom-3 right-3' }: {
-  id: string; categoria: string; tamanhoIcone?: number; editavel?: boolean; className?: string; posicaoBotoes?: string;
+// Capa da parada: foto do usuário → foto do pacote → degradê + ícone da categoria. Preenche o contêiner.
+export default function Capa({ parada: p, tamanhoIcone = 28, editavel = false, className = '', posicaoBotoes = 'bottom-3 right-3' }: {
+  parada: Parada; tamanhoIcone?: number; editavel?: boolean; className?: string; posicaoBotoes?: string;
 }) {
-  const { url, definir, remover } = useFoto(id);
+  const { viagem } = useViagem();
+  const [propria, recarregar] = useBlobUrl(() => lerFotoUsuario(viagem.id, p.id), [viagem.id, p.id]);
+  const [pacote] = useBlobUrl(async () => (p.foto?.arquivo ? lerArquivo(viagem.id, p.foto.arquivo) : undefined), [viagem.id, p.foto?.arquivo]);
   const input = useRef<HTMLInputElement>(null);
-  const { Icone, degrade } = visual(categoria);
-  const padrao = fotoPadrao(id);
-  const src = url ?? padrao;
-  const credito = !url && padrao ? FOTOS[id] : undefined;
+  const { Icone, degrade } = visual(p.categoria);
+  const src = propria ?? pacote;
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {src ? (
-        <img src={src} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={src} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       ) : (
         <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${degrade}`}>
           <Icone size={tamanhoIcone} className="text-white/90 drop-shadow" strokeWidth={1.75} />
         </div>
       )}
-      {editavel && credito && (
-        <a href={credito.fonte} target="_blank" rel="noreferrer"
-          className="absolute bottom-10 left-4 max-w-[55%] truncate rounded-full bg-black/40 px-2 py-0.5 text-[10px] text-white backdrop-blur">
-          Foto: {credito.autor} · {credito.licenca}
-        </a>
+      {editavel && !propria && pacote && p.foto?.credito && (
+        <span className="absolute bottom-10 left-4 max-w-[55%] truncate rounded-full bg-black/40 px-2 py-0.5 text-[10px] text-white backdrop-blur">
+          Foto: {p.foto.credito}
+        </span>
       )}
       {editavel && (
         <div className={`absolute flex gap-2 ${posicaoBotoes}`}>
-          {url && (
-            <button type="button" onClick={remover} aria-label="Remover foto"
+          {propria && (
+            <button type="button" onClick={async () => { await apagarFotoUsuario(viagem.id, p.id); recarregar(); }} aria-label="Remover foto"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur">
               <Trash2 size={16} />
             </button>
           )}
           <button type="button" onClick={() => input.current?.click()}
             className="flex h-9 items-center gap-1.5 rounded-full bg-black/40 px-3 text-xs font-medium text-white backdrop-blur">
-            <Camera size={15} /> {url ? 'Trocar foto' : 'Adicionar foto'}
+            <Camera size={15} /> {propria ? 'Trocar foto' : 'Sua foto'}
           </button>
-          <input ref={input} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && definir(e.target.files[0])} />
+          <input ref={input} type="file" accept="image/*" hidden
+            onChange={async (e) => { const f = e.target.files?.[0]; if (f) { await gravarFotoUsuario(viagem.id, p.id, f); recarregar(); } }} />
         </div>
       )}
     </div>

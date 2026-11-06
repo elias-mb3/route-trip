@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host",
-    "tiles": "node scripts/baixar-tiles.mjs",
-    "senha": "node scripts/definir-senha.mjs",
     "build:android": "tsc -b && vite build --mode android",
-    "test": "vitest run"
+    "test": "vitest run",
+    "validar": "vite-node scripts/validar.ts",
+    "schema": "vite-node scripts/schema.ts",
+    "pacote": "vite-node scripts/pacote.ts",
+    "exemplo": "vite-node scripts/pacote.ts holambra --saida public/exemplo/holambra.viagem.zip"
   },
   "dependencies": {
     "@aparajita/capacitor-secure-storage": "^8.0.1",
@@ -40,6 +42,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "fake-indexeddb": "^6.2.7",
     "postcss": "^8.4.49",
     "sharp": "^0.35.5",
     "tailwindcss": "^3.4.15",
