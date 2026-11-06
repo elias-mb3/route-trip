@@ -7,6 +7,12 @@ uma release com número normal e nome "Demo" na tag e aqui.
 Para lançar: subir `version` em `package.json` (e nas linhas 3 e 9 de `package-lock.json`),
 registrar aqui, `./dev.sh apk`, commit e `git tag -a vX.Y.Z`.
 
+## [1.3.0] - 2026-11-06
+
+- Logo: carro sobre um mapa (`assets/logo/*.svg`). Ícone adaptativo no Android (mapa no fundo,
+  carro na frente, versão monocromática para ícones temáticos), splash e ícones do PWA.
+- `./dev.sh icones` regera tudo a partir dos SVGs.
+
 ## [1.2.0] - 2026-11-06
 
 - Holambra: removidos itens pessoais (observação do hotel, 2 itens do

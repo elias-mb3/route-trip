@@ -27,6 +27,7 @@ case "${1:-dev}" in
   validar)        shift; run "$IMG" npm run --silent validar -- "$@" ;;
   pacote)         shift; run "$IMG" npm run --silent pacote -- "$@" ;;
   schema)         run "$IMG" npm run --silent schema ;;
+  icones)         run "$IMG" npm run --silent icones ;;
   preview)        run -p 127.0.0.1:4173:4173 "$IMG" sh -c 'npm run build && npm run preview -- --host 0.0.0.0' ;;
   shell)          run "$IMG" sh ;;
   shell-android)  run_and bash ;;

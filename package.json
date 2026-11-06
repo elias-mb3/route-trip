@@ -1,7 +1,7 @@
 {
   "name": "holambra-viagem",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,7 @@
     "validar": "vite-node scripts/validar.ts",
     "schema": "vite-node scripts/schema.ts",
     "pacote": "vite-node scripts/pacote.ts",
+    "icones": "vite-node scripts/icones.ts",
     "exemplo": "vite-node scripts/pacote.ts holambra --saida public/exemplo/holambra.viagem.zip"
   },
   "dependencies": {

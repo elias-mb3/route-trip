@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">
+  <!-- Carro (cabe na área segura do ícone adaptativo: círculo de raio 33 no centro) -->
+  <g transform="translate(-3 0)">
+    <ellipse cx="57" cy="74" rx="30" ry="3.5" fill="#1C1917" opacity=".18"/>
+    <path id="c" d="M28 64 V58 Q28 54 32 53 L40 51 L46 43 Q48 40 52 40 H64 Q68 40 70 43 L76 51 L82 53 Q86 54 86 58 V64 Q86 66 84 66 H30 Q28 66 28 64Z"
+      fill="#E8613C" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
+    <path d="M45 50 L49 44.5 Q50 43 52 43 H56 V50Z M59 50 V43 H63 Q65 43 66 44.5 L70 50Z" fill="#E0F2FE"/>
+    <rect x="80" y="56" width="5" height="3" rx="1.5" fill="#FDE68A"/>
+    <rect x="28.5" y="56" width="3" height="3" rx="1.5" fill="#B91C1C"/>
+    <g stroke="#FFFFFF" stroke-width="2.5">
+      <circle cx="41" cy="66" r="7" fill="#292524"/>
+      <circle cx="73" cy="66" r="7" fill="#292524"/>
+    </g>
+    <circle cx="41" cy="66" r="2.8" fill="#D6D3D1"/>
+    <circle cx="73" cy="66" r="2.8" fill="#D6D3D1"/>
+  </g>
+</svg>
